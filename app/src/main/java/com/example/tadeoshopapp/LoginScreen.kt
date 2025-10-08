@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -18,7 +17,6 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
@@ -33,7 +31,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(
+    onRegisterClick: () -> Unit = {}
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -51,7 +51,7 @@ fun LoginScreen() {
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            // Card
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -101,6 +101,7 @@ fun LoginScreen() {
                             .padding(bottom = 8.dp)
                     )
 
+                    // Email input
                     OutlinedTextField(
                         value = email,
                         onValueChange = {
@@ -139,6 +140,7 @@ fun LoginScreen() {
                             .padding(bottom = 8.dp)
                     )
 
+                    // Password Input
                     OutlinedTextField(
                         value = password,
                         onValueChange = {
@@ -184,7 +186,7 @@ fun LoginScreen() {
                             passwordError = password.isEmpty() || password.length < 6
 
                             if (!emailError && !passwordError) {
-                                // Aquí ira nuestra logica del login
+                                // Aquí va tu lógica de login
                                 println("Login con: $email")
                             }
                         },
@@ -206,6 +208,7 @@ fun LoginScreen() {
 
                     Spacer(modifier = Modifier.height(32.dp))
 
+                    // pie de pagina
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
@@ -219,7 +222,7 @@ fun LoginScreen() {
                             modifier = Modifier
                                 .weight(1f)
                                 .clickable {
-                                    // recuperar contraseña
+                                    // Navegar a recuperar contraseña
                                 }
                         )
 
@@ -235,7 +238,7 @@ fun LoginScreen() {
                             modifier = Modifier
                                 .weight(1f)
                                 .clickable {
-                                    // Navegar a registro
+                                    onRegisterClick()
                                 },
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {

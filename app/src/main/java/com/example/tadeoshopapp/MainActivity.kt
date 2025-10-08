@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             TadeoShopAppTheme {
                 Surface(color = MaterialTheme.colors.background) {
-                    LoginScreen()
+                    AppNavigation()
                 }
             }
         }
