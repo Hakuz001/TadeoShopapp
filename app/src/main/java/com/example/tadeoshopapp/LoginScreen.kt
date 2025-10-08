@@ -90,7 +90,7 @@ fun LoginScreen() {
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // Email Field
+                    // Email
                     Text(
                         text = "Correo Electrónico",
                         fontSize = 16.sp,
@@ -128,7 +128,7 @@ fun LoginScreen() {
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Password Field
+                    // Password
                     Text(
                         text = "Contraseña",
                         fontSize = 16.sp,
@@ -176,7 +176,7 @@ fun LoginScreen() {
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // Login Button
+                    // Login Boton
                     Button(
                         onClick = {
                             // Validaciones
@@ -184,7 +184,7 @@ fun LoginScreen() {
                             passwordError = password.isEmpty() || password.length < 6
 
                             if (!emailError && !passwordError) {
-                                // Aquí va tu lógica de login
+                                // Aquí ira nuestra logica del login
                                 println("Login con: $email")
                             }
                         },
@@ -206,7 +206,6 @@ fun LoginScreen() {
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // Footer Links
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
@@ -220,7 +219,7 @@ fun LoginScreen() {
                             modifier = Modifier
                                 .weight(1f)
                                 .clickable {
-                                    // Navegar a recuperar contraseña
+                                    // recuperar contraseña
                                 }
                         )
 
