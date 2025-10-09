@@ -29,16 +29,32 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun LoginScreen(
-    onRegisterClick: () -> Unit = {}
+    onRegisterClick: () -> Unit = {},
+    onLoginSuccess: () -> Unit = {},
+    viewModel: AuthViewModel = viewModel()
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var emailError by remember { mutableStateOf(false) }
     var passwordError by remember { mutableStateOf(false) }
+
+    val authState by viewModel.authState.collectAsState()
+
+    // Observar el estado de autenticación
+    LaunchedEffect(authState) {
+        when (authState) {
+            is AuthState.Success -> {
+                onLoginSuccess()
+                viewModel.resetAuthState()
+            }
+            else -> {}
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -51,7 +67,7 @@ fun LoginScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-
+            // Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -68,8 +84,7 @@ fun LoginScreen(
                     Image(
                         painter = painterResource(id = R.drawable.ic_dog_logo),
                         contentDescription = "TadeoShop Logo",
-                        modifier = Modifier
-                            .size(140.dp)
+                        modifier = Modifier.size(140.dp)
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -90,7 +105,17 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // Email
+                    // Mostrar mensajes de error
+                    if (authState is AuthState.Error) {
+                        Text(
+                            text = (authState as AuthState.Error).message,
+                            color = Color.Red,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                    }
+
+                    // Email Label
                     Text(
                         text = "Correo Electrónico",
                         fontSize = 16.sp,
@@ -101,7 +126,7 @@ fun LoginScreen(
                             .padding(bottom = 8.dp)
                     )
 
-                    // Email input
+                    // Email Input
                     OutlinedTextField(
                         value = email,
                         onValueChange = {
@@ -117,6 +142,7 @@ fun LoginScreen(
                             )
                         },
                         isError = emailError,
+                        enabled = authState !is AuthState.Loading,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         shape = RoundedCornerShape(25.dp),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -129,7 +155,7 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Password
+                    // Password Label
                     Text(
                         text = "Contraseña",
                         fontSize = 16.sp,
@@ -166,6 +192,7 @@ fun LoginScreen(
                         },
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         isError = passwordError,
+                        enabled = authState !is AuthState.Loading,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         shape = RoundedCornerShape(25.dp),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -178,7 +205,7 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // Login Boton
+                    // Login Button
                     Button(
                         onClick = {
                             // Validaciones
@@ -186,10 +213,10 @@ fun LoginScreen(
                             passwordError = password.isEmpty() || password.length < 6
 
                             if (!emailError && !passwordError) {
-                                // Aquí va tu lógica de login
-                                println("Login con: $email")
+                                viewModel.loginUser(email, password)
                             }
                         },
+                        enabled = authState !is AuthState.Loading,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(60.dp),
@@ -198,17 +225,24 @@ fun LoginScreen(
                             backgroundColor = Color(0xFF00ACC1)
                         )
                     ) {
-                        Text(
-                            text = "Iniciar Sesión",
-                            color = Color.White,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Medium
-                        )
+                        if (authState is AuthState.Loading) {
+                            CircularProgressIndicator(
+                                color = Color.White,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        } else {
+                            Text(
+                                text = "Iniciar Sesión",
+                                color = Color.White,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // pie de pagina
+                    // Footer Links
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,

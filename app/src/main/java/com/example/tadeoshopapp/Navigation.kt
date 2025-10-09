@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Register : Screen("register")
+    object Home : Screen("home")
 }
 
 @Composable
@@ -22,6 +23,11 @@ fun AppNavigation() {
             LoginScreen(
                 onRegisterClick = {
                     navController.navigate(Screen.Register.route)
+                },
+                onLoginSuccess = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
                 }
             )
         }
@@ -31,11 +37,16 @@ fun AppNavigation() {
                 onBackClick = {
                     navController.popBackStack()
                 },
-                onNextClick = {
-                    // Aquí es para que pasemos al siguiente modulo
-                    // navController.navigate(Screen.NextScreen.route)
+                onRegisterSuccess = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
                 }
             )
+        }
+
+        composable(Screen.Home.route) {
+            HomeScreen()
         }
     }
 }

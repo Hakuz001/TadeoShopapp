@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "693300476571",
+    "project_id": "tadeoshop-c7c8a",
+    "storage_bucket": "tadeoshop-c7c8a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:693300476571:android:0fb0492c4e80705fa5243e",
+        "android_client_info": {
+          "package_name": "com.example.tadeoshopapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyATA6DLtm1jYQZ10igUqz_weC3wH3M32Y8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

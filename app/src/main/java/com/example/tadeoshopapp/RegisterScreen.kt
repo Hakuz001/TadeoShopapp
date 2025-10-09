@@ -26,25 +26,39 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun RegisterScreen(
     onBackClick: () -> Unit = {},
-    onNextClick: () -> Unit = {}
+    onRegisterSuccess: () -> Unit = {},
+    viewModel: AuthViewModel = viewModel()
 ) {
     var nombres by remember { mutableStateOf("") }
     var apellidos by remember { mutableStateOf("") }
     var correo by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var userType by remember { mutableStateOf("Comprador") } // "Comprador" o "Vendedor"
+    var userType by remember { mutableStateOf("Comprador") }
 
     var nombresError by remember { mutableStateOf(false) }
     var correoError by remember { mutableStateOf(false) }
     var passwordError by remember { mutableStateOf(false) }
+
+    val authState by viewModel.authState.collectAsState()
+
+    // Observar el estado de autenticación
+    LaunchedEffect(authState) {
+        when (authState) {
+            is AuthState.Success -> {
+                onRegisterSuccess()
+                viewModel.resetAuthState()
+            }
+            else -> {}
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -70,6 +84,26 @@ fun RegisterScreen(
                         .padding(32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    // Mostrar mensajes de error
+                    if (authState is AuthState.Error) {
+                        Text(
+                            text = (authState as AuthState.Error).message,
+                            color = Color.Red,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                    }
+
+                    // Mostrar mensajes de éxito
+                    if (authState is AuthState.Success) {
+                        Text(
+                            text = (authState as AuthState.Success).message,
+                            color = Color(0xFF4CAF50),
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                    }
+
                     // Nombres Field
                     Text(
                         text = "Nombres",
@@ -96,6 +130,7 @@ fun RegisterScreen(
                             )
                         },
                         isError = nombresError,
+                        enabled = authState !is AuthState.Loading,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                         shape = RoundedCornerShape(25.dp),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -108,7 +143,7 @@ fun RegisterScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Apellidos casilla
+                    // Apellidos Field
                     Text(
                         text = "Apellidos",
                         fontSize = 16.sp,
@@ -130,6 +165,7 @@ fun RegisterScreen(
                                 tint = Color(0xFF999999)
                             )
                         },
+                        enabled = authState !is AuthState.Loading,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                         shape = RoundedCornerShape(25.dp),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -142,7 +178,7 @@ fun RegisterScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Correo Institucional casilla
+                    // Correo Institucional Field
                     Text(
                         text = "Correo Institucional",
                         fontSize = 16.sp,
@@ -168,6 +204,7 @@ fun RegisterScreen(
                             )
                         },
                         isError = correoError,
+                        enabled = authState !is AuthState.Loading,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         shape = RoundedCornerShape(25.dp),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -180,7 +217,7 @@ fun RegisterScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Contraseña casilla
+                    // Contraseña Field
                     Text(
                         text = "Contraseña",
                         fontSize = 16.sp,
@@ -216,6 +253,7 @@ fun RegisterScreen(
                         },
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         isError = passwordError,
+                        enabled = authState !is AuthState.Loading,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         shape = RoundedCornerShape(25.dp),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -241,7 +279,7 @@ fun RegisterScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.Start
                     ) {
-                        // tamaño Boton Comprador
+                        // Radio Button Comprador
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -255,6 +293,7 @@ fun RegisterScreen(
                             RadioButton(
                                 selected = userType == "Comprador",
                                 onClick = { userType = "Comprador" },
+                                enabled = authState !is AuthState.Loading,
                                 colors = RadioButtonDefaults.colors(
                                     selectedColor = Color(0xFF1E88E5),
                                     unselectedColor = Color(0xFF999999)
@@ -267,7 +306,7 @@ fun RegisterScreen(
                             )
                         }
 
-                        // tamaño Boton Vendedor
+                        // Radio Button Vendedor
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -281,6 +320,7 @@ fun RegisterScreen(
                             RadioButton(
                                 selected = userType == "Vendedor",
                                 onClick = { userType = "Vendedor" },
+                                enabled = authState !is AuthState.Loading,
                                 colors = RadioButtonDefaults.colors(
                                     selectedColor = Color(0xFF1E88E5),
                                     unselectedColor = Color(0xFF999999)
@@ -296,7 +336,7 @@ fun RegisterScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Logo de registro
+                    // Logo
                     Box(
                         modifier = Modifier
                             .size(120.dp)
@@ -305,7 +345,7 @@ fun RegisterScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.ic_dog_register),
+                            painter = painterResource(id = R.drawable.ic_dog_logo),
                             contentDescription = "TadeoShop Logo",
                             modifier = Modifier.size(100.dp)
                         )
@@ -321,6 +361,7 @@ fun RegisterScreen(
                         // Botón Volver
                         Button(
                             onClick = onBackClick,
+                            enabled = authState !is AuthState.Loading,
                             modifier = Modifier
                                 .weight(1f)
                                 .height(60.dp),
@@ -337,7 +378,7 @@ fun RegisterScreen(
                             )
                         }
 
-                        // Botón Siguiente
+                        // Botón Siguiente (Registrar)
                         Button(
                             onClick = {
                                 // Validaciones
@@ -346,11 +387,17 @@ fun RegisterScreen(
                                 passwordError = password.isEmpty() || password.length < 6
 
                                 if (!nombresError && !correoError && !passwordError) {
-                                    // Aquí va tu lógica de registro
-                                    println("Registro: $nombres $apellidos - $correo - Tipo: $userType")
-                                    onNextClick()
+                                    // Registrar usuario con Firebase
+                                    viewModel.registerUser(
+                                        nombres = nombres,
+                                        apellidos = apellidos,
+                                        email = correo,
+                                        password = password,
+                                        tipoUsuario = userType
+                                    )
                                 }
                             },
+                            enabled = authState !is AuthState.Loading,
                             modifier = Modifier
                                 .weight(1f)
                                 .height(60.dp),
@@ -359,12 +406,19 @@ fun RegisterScreen(
                                 backgroundColor = Color(0xFF00ACC1)
                             )
                         ) {
-                            Text(
-                                text = "Siguiente →",
-                                color = Color.White,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium
-                            )
+                            if (authState is AuthState.Loading) {
+                                CircularProgressIndicator(
+                                    color = Color.White,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            } else {
+                                Text(
+                                    text = "Siguiente →",
+                                    color = Color.White,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
                         }
                     }
                 }
