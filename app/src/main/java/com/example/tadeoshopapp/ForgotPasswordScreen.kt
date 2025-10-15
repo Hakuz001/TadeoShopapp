@@ -41,7 +41,7 @@ fun ForgotPasswordScreen(
 
     val authState by viewModel.authState.collectAsState()
 
-    // Observar cambios en authState
+    // Observar cambios en autenticacion
     LaunchedEffect(authState) {
         when (authState) {
             is AuthState.Success -> {
@@ -246,7 +246,7 @@ fun ForgotPasswordScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Mensaje informativo con mascota
+                // mensaje
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,

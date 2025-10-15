@@ -56,7 +56,7 @@ fun RegisterScreen(
 
     val authState by viewModel.authState.collectAsState()
 
-    // Observar cambios en authState para mostrar diálogos
+    // observacion de errores y exito
     LaunchedEffect(authState) {
         android.util.Log.d("RegisterScreen", "AuthState changed: $authState")
         when (authState) {
