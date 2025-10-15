@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Register : Screen("register")
+    object ForgotPassword : Screen("forgot_password")
     object Home : Screen("home")
 }
 
@@ -24,6 +25,9 @@ fun AppNavigation() {
                 onRegisterClick = {
                     navController.navigate(Screen.Register.route)
                 },
+                onForgotPasswordClick = {
+                    navController.navigate(Screen.ForgotPassword.route)
+                },
                 onLoginSuccess = {
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
@@ -38,9 +42,15 @@ fun AppNavigation() {
                     navController.popBackStack()
                 },
                 onRegisterSuccess = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
-                    }
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.ForgotPassword.route) {
+            ForgotPasswordScreen(
+                onBackClick = {
+                    navController.popBackStack()
                 }
             )
         }

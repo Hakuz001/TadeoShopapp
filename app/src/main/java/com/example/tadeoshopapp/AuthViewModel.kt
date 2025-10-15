@@ -9,7 +9,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.withTimeout
 
 sealed class AuthState {
     object Idle : AuthState()
@@ -17,7 +18,6 @@ sealed class AuthState {
     data class Success(val message: String) : AuthState()
     data class Error(val message: String) : AuthState()
 }
-
 
 data class User(
     val uid: String = "",
@@ -39,18 +39,15 @@ class AuthViewModel : ViewModel() {
     val currentUser: StateFlow<User?> = _currentUser
 
     init {
-
         checkCurrentUser()
     }
 
     private fun checkCurrentUser() {
         val firebaseUser = auth.currentUser
         if (firebaseUser != null) {
-
             loadUserData(firebaseUser.uid)
         }
     }
-
 
     fun registerUser(
         nombres: String,
@@ -61,14 +58,15 @@ class AuthViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             try {
+                android.util.Log.d("AuthViewModel", "Starting registration...")
                 _authState.value = AuthState.Loading
 
-
+                android.util.Log.d("AuthViewModel", "Creating user with email: $email")
                 val result = auth.createUserWithEmailAndPassword(email, password).await()
                 val firebaseUser = result.user
+                android.util.Log.d("AuthViewModel", "User created: ${firebaseUser?.uid}")
 
                 if (firebaseUser != null) {
-
                     val user = User(
                         uid = firebaseUser.uid,
                         nombres = nombres,
@@ -77,18 +75,31 @@ class AuthViewModel : ViewModel() {
                         tipoUsuario = tipoUsuario
                     )
 
-                    firestore.collection("users")
-                        .document(firebaseUser.uid)
-                        .set(user)
-                        .await()
+                    try {
+                        android.util.Log.d("AuthViewModel", "Saving user to Firestore...")
+
+                        withTimeout(30000) {
+                            firestore.collection("users")
+                                .document(firebaseUser.uid)
+                                .set(user)
+                                .await()
+                        }
+
+                        android.util.Log.d("AuthViewModel", "User saved to Firestore successfully")
+                    } catch (e: TimeoutCancellationException) {
+                        android.util.Log.w("AuthViewModel", "Timeout saving to Firestore, but user was created in Auth")
+                    }
 
                     _currentUser.value = user
                     _authState.value = AuthState.Success("Usuario registrado exitosamente")
+                    android.util.Log.d("AuthViewModel", "State set to Success")
                 } else {
+                    android.util.Log.e("AuthViewModel", "Firebase user is null")
                     _authState.value = AuthState.Error("Error al crear usuario")
                 }
 
             } catch (e: FirebaseAuthException) {
+                android.util.Log.e("AuthViewModel", "FirebaseAuthException: ${e.errorCode} - ${e.message}")
                 _authState.value = AuthState.Error(
                     when (e.errorCode) {
                         "ERROR_EMAIL_ALREADY_IN_USE" -> "Este correo ya está registrado"
@@ -98,23 +109,21 @@ class AuthViewModel : ViewModel() {
                     }
                 )
             } catch (e: Exception) {
+                android.util.Log.e("AuthViewModel", "Exception: ${e.message}", e)
                 _authState.value = AuthState.Error("Error: ${e.message}")
             }
         }
     }
-
 
     fun loginUser(email: String, password: String) {
         viewModelScope.launch {
             try {
                 _authState.value = AuthState.Loading
 
-
                 val result = auth.signInWithEmailAndPassword(email, password).await()
                 val firebaseUser = result.user
 
                 if (firebaseUser != null) {
-
                     loadUserData(firebaseUser.uid)
                     _authState.value = AuthState.Success("Inicio de sesión exitoso")
                 } else {
@@ -137,7 +146,6 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-
     private fun loadUserData(uid: String) {
         viewModelScope.launch {
             try {
@@ -155,15 +163,40 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-
     fun logout() {
         auth.signOut()
         _currentUser.value = null
         _authState.value = AuthState.Idle
     }
 
-
     fun resetAuthState() {
         _authState.value = AuthState.Idle
+    }
+
+    fun resetPassword(email: String) {
+        viewModelScope.launch {
+            try {
+                android.util.Log.d("AuthViewModel", "Sending password reset email to: $email")
+                _authState.value = AuthState.Loading
+
+                auth.sendPasswordResetEmail(email).await()
+
+                android.util.Log.d("AuthViewModel", "Password reset email sent successfully")
+                _authState.value = AuthState.Success("Correo de recuperación enviado")
+
+            } catch (e: FirebaseAuthException) {
+                android.util.Log.e("AuthViewModel", "FirebaseAuthException: ${e.errorCode} - ${e.message}")
+                _authState.value = AuthState.Error(
+                    when (e.errorCode) {
+                        "ERROR_USER_NOT_FOUND" -> "No existe una cuenta con este correo"
+                        "ERROR_INVALID_EMAIL" -> "Correo electrónico inválido"
+                        else -> "Error al enviar correo: ${e.message}"
+                    }
+                )
+            } catch (e: Exception) {
+                android.util.Log.e("AuthViewModel", "Exception: ${e.message}", e)
+                _authState.value = AuthState.Error("Error: ${e.message}")
+            }
+        }
     }
 }
