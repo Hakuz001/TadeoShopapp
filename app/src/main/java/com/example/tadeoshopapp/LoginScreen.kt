@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -78,7 +79,7 @@ fun LoginScreen(
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_dog_logo),
-                        contentDescription = "TadeoShop Logo",
+                        contentDescription = stringResource(R.string.logo_description),
                         modifier = Modifier.size(110.dp)
                     )
                 }
@@ -87,7 +88,7 @@ fun LoginScreen(
 
                 // Título TadeoShop
                 Text(
-                    text = "TadeoShop",
+                    text = stringResource(R.string.login_title),
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF1E88E5)
@@ -116,7 +117,7 @@ fun LoginScreen(
 
                 // Campo Correo Electrónico
                 Text(
-                    text = "Correo Electrónico",
+                    text = stringResource(R.string.email_label),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF212121),
@@ -133,14 +134,14 @@ fun LoginScreen(
                     },
                     placeholder = {
                         Text(
-                            text = "Ejemplo@utadeo.edu.co",
+                            text = stringResource(R.string.email_placeholder),
                             fontSize = 13.sp
                         )
                     },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Email,
-                            contentDescription = "Email",
+                            contentDescription = stringResource(R.string.email_icon_description),
                             tint = Color(0xFF999999),
                             modifier = Modifier.size(20.dp)
                         )
@@ -167,7 +168,7 @@ fun LoginScreen(
 
                 // Campo Contraseña
                 Text(
-                    text = "Contraseña",
+                    text = stringResource(R.string.password_label),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF212121),
@@ -184,14 +185,14 @@ fun LoginScreen(
                     },
                     placeholder = {
                         Text(
-                            text = "Introduce tu",
+                            text = stringResource(R.string.password_placeholder),
                             fontSize = 13.sp
                         )
                     },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Lock,
-                            contentDescription = "Password",
+                            contentDescription = stringResource(R.string.password_icon_description),
                             tint = Color(0xFF999999),
                             modifier = Modifier.size(20.dp)
                         )
@@ -200,7 +201,7 @@ fun LoginScreen(
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
                                 imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                contentDescription = "Toggle password visibility",
+                                contentDescription = stringResource(R.string.toggle_password_visibility),
                                 tint = Color(0xFF999999),
                                 modifier = Modifier.size(20.dp)
                             )
@@ -259,7 +260,7 @@ fun LoginScreen(
                         )
                     } else {
                         Text(
-                            text = "Iniciar Sesión",
+                            text = stringResource(R.string.login_button),
                             color = Color.White,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
@@ -269,14 +270,14 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-
+                // Enlaces inferiores
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "¿Olvidaste tu\ncontraseña?",
+                        text = stringResource(R.string.forgot_password_link),
                         fontSize = 13.sp,
                         color = Color(0xFF1E88E5),
                         fontWeight = FontWeight.Medium,
@@ -300,13 +301,13 @@ fun LoginScreen(
                             .padding(horizontal = 16.dp)
                     ) {
                         Text(
-                            text = "¿No tienes cuenta?",
+                            text = stringResource(R.string.no_account_question),
                             fontSize = 13.sp,
                             color = Color(0xFF212121),
                             textAlign = TextAlign.Center
                         )
                         Text(
-                            text = "Regístrate",
+                            text = stringResource(R.string.register_link),
                             fontSize = 13.sp,
                             color = Color(0xFF212121),
                             fontWeight = FontWeight.Bold,

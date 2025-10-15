@@ -1,3 +1,78 @@
 <resources>
-    <string name="app_name">TadeoShop App</string>
+    <!-- App Name -->
+    <string name="app_name">TadeoShop</string>
+
+    <!-- Common -->
+    <string name="email_label">Correo Electrónico</string>
+    <string name="password_label">Contraseña</string>
+    <string name="email_placeholder">Ejemplo@utadeo.edu.co</string>
+    <string name="password_placeholder">**************</string>
+    <string name="loading">Cargando...</string>
+    <string name="continue_button">Continuar</string>
+    <string name="understood_button">Entendido</string>
+    <string name="back_button">Volver</string>
+
+    <!-- Login Screen -->
+    <string name="login_title">TadeoShop</string>
+    <string name="login_button">Iniciar Sesión</string>
+    <string name="forgot_password_link">¿Olvidaste tu\ncontraseña?</string>
+    <string name="no_account_question">¿No tienes cuenta?</string>
+    <string name="register_link">Regístrate</string>
+    <string name="login_success">Inicio de sesión exitoso</string>
+
+    <!-- Register Screen -->
+    <string name="register_title">Registro</string>
+    <string name="names_label">Nombres</string>
+    <string name="names_placeholder">Nombres completos</string>
+    <string name="lastnames_label">Apellidos</string>
+    <string name="lastnames_placeholder">Apellidos (opcional)</string>
+    <string name="institutional_email_label">Correo Institucional</string>
+    <string name="institutional_email_placeholder">Introduce correo aquí</string>
+    <string name="user_type_label">Tipo de usuario</string>
+    <string name="buyer_option">Comprador</string>
+    <string name="seller_option">Vendedor</string>
+    <string name="next_button">Siguiente</string>
+    <string name="register_success_title">¡Registro Exitoso!</string>
+    <string name="register_success_message">Tu cuenta ha sido creada exitosamente. Ya puedes iniciar sesión.</string>
+    <string name="register_error_title">Error en el Registro</string>
+
+    <!-- Forgot Password Screen -->
+    <string name="forgot_password_title">Restablecer contraseña</string>
+    <string name="forgot_password_message">Introduce tu\ncorreo\nelectrónico\ny te\nenviaremos\nun enlace\npara\nrestablecer\ntu\ncontraseña.</string>
+    <string name="send_link_button">Enviar enlace</string>
+    <string name="back_to_login">Volver al inicio de sesión</string>
+    <string name="email_sent_title">¡Correo Enviado!</string>
+    <string name="email_sent_message">Revisa tu correo electrónico. Te hemos enviado un enlace para restablecer tu contraseña.</string>
+    <string name="error_title">Error</string>
+
+    <!-- Firebase Errors -->
+    <string name="error_email_already_in_use">Este correo ya está registrado</string>
+    <string name="error_weak_password">La contraseña debe tener al menos 6 caracteres</string>
+    <string name="error_invalid_email">Correo electrónico inválido</string>
+    <string name="error_user_not_found">No existe una cuenta con este correo</string>
+    <string name="error_wrong_password">Contraseña incorrecta</string>
+    <string name="error_user_disabled">Usuario deshabilitado</string>
+    <string name="error_timeout">Error: Timeout al guardar datos. Verifica tu conexión.</string>
+    <string name="user_registered_successfully">Usuario registrado exitosamente</string>
+    <string name="password_reset_email_sent">Correo de recuperación enviado</string>
+
+    <!-- Contenido descriptivo -->
+    <string name="logo_description">TadeoShop Logo</string>
+    <string name="email_icon_description">Email</string>
+    <string name="password_icon_description">Password</string>
+    <string name="names_icon_description">Nombres</string>
+    <string name="toggle_password_visibility">Toggle password visibility</string>
+    <string name="success_icon_description">Éxito</string>
+    <string name="error_icon_description">Error</string>
+    <string name="sad_dog_description">Mascota Tadeo Triste</string>
+    <string name="back_icon_description">Volver</string>
+
+
+    <!-- Home Screen -->
+    <string name="home_title">TadeoShop</string>
+    <string name="welcome_message">¡Bienvenido!</string>
+    <string name="name_label">Nombre: %1$s %2$s</string>
+    <string name="email_label_display">Email: %1$s</string>
+    <string name="user_type_label_display">Tipo: %1$s</string>
+    <string name="logout_button">Cerrar Sesión</string>
 </resources>

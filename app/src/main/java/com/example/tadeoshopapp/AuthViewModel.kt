@@ -91,6 +91,8 @@ class AuthViewModel : ViewModel() {
                     }
 
                     _currentUser.value = user
+                    // NOTA: Este string no se puede usar aquí directamente porque necesitarías Context
+                    // Lo dejaremos así por ahora, o puedes crear una versión que acepte Context
                     _authState.value = AuthState.Success("Usuario registrado exitosamente")
                     android.util.Log.d("AuthViewModel", "State set to Success")
                 } else {

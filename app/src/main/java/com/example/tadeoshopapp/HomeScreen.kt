@@ -7,6 +7,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -20,7 +21,7 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("TadeoShop") }
+                title = { Text(stringResource(R.string.home_title)) }
             )
         }
     ) { padding ->
@@ -33,22 +34,22 @@ fun HomeScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "¡Bienvenido!",
+                text = stringResource(R.string.welcome_message),
                 fontSize = 32.sp
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             currentUser?.let { user ->
-                Text(text = "Nombre: ${user.nombres} ${user.apellidos}")
-                Text(text = "Email: ${user.email}")
-                Text(text = "Tipo: ${user.tipoUsuario}")
+                Text(text = stringResource(R.string.name_label, user.nombres, user.apellidos))
+                Text(text = stringResource(R.string.email_label_display, user.email))
+                Text(text = stringResource(R.string.user_type_label_display, user.tipoUsuario))
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(onClick = { viewModel.logout() }) {
-                Text("Cerrar Sesión")
+                Text(stringResource(R.string.logout_button))
             }
         }
     }
