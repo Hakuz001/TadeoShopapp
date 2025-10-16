@@ -48,6 +48,14 @@ fun LoginScreen(
 
     val authState by viewModel.authState.collectAsState()
 
+    // Observar cambios en authState para navegar automáticamente
+    LaunchedEffect(authState) {
+        if (authState is AuthState.Success) {
+            onLoginSuccess()
+            viewModel.resetAuthState()
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -236,12 +244,6 @@ fun LoginScreen(
 
                         if (!emailError && !passwordError) {
                             viewModel.loginUser(email, password)
-
-                            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                                if (authState is AuthState.Success) {
-                                    onLoginSuccess()
-                                }
-                            }, 2000)
                         }
                     },
                     enabled = authState !is AuthState.Loading,

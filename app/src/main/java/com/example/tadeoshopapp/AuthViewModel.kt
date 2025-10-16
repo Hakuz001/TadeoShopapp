@@ -24,7 +24,11 @@ data class User(
     val nombres: String = "",
     val apellidos: String = "",
     val email: String = "",
-    val tipoUsuario: String = "Comprador"
+    val tipoUsuario: String = "Comprador",
+    val fechaRegistro: Long = System.currentTimeMillis(),
+    val biografia: String = "",
+    val telefono: String = "",
+    val productosPublicados: Int = 0
 )
 
 class AuthViewModel : ViewModel() {
@@ -43,9 +47,11 @@ class AuthViewModel : ViewModel() {
     }
 
     private fun checkCurrentUser() {
-        val firebaseUser = auth.currentUser
-        if (firebaseUser != null) {
-            loadUserData(firebaseUser.uid)
+        viewModelScope.launch {
+            val firebaseUser = auth.currentUser
+            if (firebaseUser != null) {
+                loadUserData(firebaseUser.uid)
+            }
         }
     }
 
@@ -58,13 +64,10 @@ class AuthViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             try {
-                android.util.Log.d("AuthViewModel", "Starting registration...")
                 _authState.value = AuthState.Loading
 
-                android.util.Log.d("AuthViewModel", "Creating user with email: $email")
                 val result = auth.createUserWithEmailAndPassword(email, password).await()
                 val firebaseUser = result.user
-                android.util.Log.d("AuthViewModel", "User created: ${firebaseUser?.uid}")
 
                 if (firebaseUser != null) {
                     val user = User(
@@ -72,36 +75,28 @@ class AuthViewModel : ViewModel() {
                         nombres = nombres,
                         apellidos = apellidos,
                         email = email,
-                        tipoUsuario = tipoUsuario
+                        tipoUsuario = tipoUsuario,
+                        fechaRegistro = System.currentTimeMillis()
                     )
 
                     try {
-                        android.util.Log.d("AuthViewModel", "Saving user to Firestore...")
-
                         withTimeout(30000) {
                             firestore.collection("users")
                                 .document(firebaseUser.uid)
                                 .set(user)
                                 .await()
                         }
-
-                        android.util.Log.d("AuthViewModel", "User saved to Firestore successfully")
                     } catch (e: TimeoutCancellationException) {
-                        android.util.Log.w("AuthViewModel", "Timeout saving to Firestore, but user was created in Auth")
+                        // Usuario creado en Auth pero con timeout en Firestore
                     }
 
                     _currentUser.value = user
-                    // NOTA: Este string no se puede usar aquí directamente porque necesitarías Context
-                    // Lo dejaremos así por ahora, o puedes crear una versión que acepte Context
                     _authState.value = AuthState.Success("Usuario registrado exitosamente")
-                    android.util.Log.d("AuthViewModel", "State set to Success")
                 } else {
-                    android.util.Log.e("AuthViewModel", "Firebase user is null")
                     _authState.value = AuthState.Error("Error al crear usuario")
                 }
 
             } catch (e: FirebaseAuthException) {
-                android.util.Log.e("AuthViewModel", "FirebaseAuthException: ${e.errorCode} - ${e.message}")
                 _authState.value = AuthState.Error(
                     when (e.errorCode) {
                         "ERROR_EMAIL_ALREADY_IN_USE" -> "Este correo ya está registrado"
@@ -111,7 +106,6 @@ class AuthViewModel : ViewModel() {
                     }
                 )
             } catch (e: Exception) {
-                android.util.Log.e("AuthViewModel", "Exception: ${e.message}", e)
                 _authState.value = AuthState.Error("Error: ${e.message}")
             }
         }
@@ -121,6 +115,7 @@ class AuthViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 _authState.value = AuthState.Loading
+                _currentUser.value = null
 
                 val result = auth.signInWithEmailAndPassword(email, password).await()
                 val firebaseUser = result.user
@@ -156,8 +151,12 @@ class AuthViewModel : ViewModel() {
                     .get()
                     .await()
 
-                val user = document.toObject(User::class.java)
-                _currentUser.value = user
+                if (document.exists()) {
+                    val user = document.toObject(User::class.java)
+                    _currentUser.value = user
+                } else {
+                    _authState.value = AuthState.Error("Usuario no encontrado en la base de datos")
+                }
 
             } catch (e: Exception) {
                 _authState.value = AuthState.Error("Error al cargar datos: ${e.message}")
@@ -166,9 +165,11 @@ class AuthViewModel : ViewModel() {
     }
 
     fun logout() {
-        auth.signOut()
-        _currentUser.value = null
-        _authState.value = AuthState.Idle
+        viewModelScope.launch {
+            auth.signOut()
+            _currentUser.value = null
+            _authState.value = AuthState.Idle
+        }
     }
 
     fun resetAuthState() {
@@ -178,16 +179,13 @@ class AuthViewModel : ViewModel() {
     fun resetPassword(email: String) {
         viewModelScope.launch {
             try {
-                android.util.Log.d("AuthViewModel", "Sending password reset email to: $email")
                 _authState.value = AuthState.Loading
 
                 auth.sendPasswordResetEmail(email).await()
 
-                android.util.Log.d("AuthViewModel", "Password reset email sent successfully")
                 _authState.value = AuthState.Success("Correo de recuperación enviado")
 
             } catch (e: FirebaseAuthException) {
-                android.util.Log.e("AuthViewModel", "FirebaseAuthException: ${e.errorCode} - ${e.message}")
                 _authState.value = AuthState.Error(
                     when (e.errorCode) {
                         "ERROR_USER_NOT_FOUND" -> "No existe una cuenta con este correo"
@@ -196,8 +194,56 @@ class AuthViewModel : ViewModel() {
                     }
                 )
             } catch (e: Exception) {
-                android.util.Log.e("AuthViewModel", "Exception: ${e.message}", e)
                 _authState.value = AuthState.Error("Error: ${e.message}")
+            }
+        }
+    }
+
+    fun updateUserProfile(
+        nombres: String,
+        apellidos: String,
+        telefono: String,
+        biografia: String,
+        onSuccess: () -> Unit = {},
+        onError: (String) -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            try {
+                _authState.value = AuthState.Loading
+
+                val userId = auth.currentUser?.uid
+                if (userId == null) {
+                    onError("Usuario no autenticado")
+                    _authState.value = AuthState.Error("Usuario no autenticado")
+                    return@launch
+                }
+
+                val updates = hashMapOf<String, Any>(
+                    "nombres" to nombres,
+                    "apellidos" to apellidos,
+                    "telefono" to telefono,
+                    "biografia" to biografia
+                )
+
+                withTimeout(10000) {
+                    firestore.collection("users")
+                        .document(userId)
+                        .update(updates)
+                        .await()
+                }
+
+                // Recargar datos del usuario
+                loadUserData(userId)
+
+                _authState.value = AuthState.Success("Perfil actualizado exitosamente")
+                onSuccess()
+
+            } catch (e: TimeoutCancellationException) {
+                _authState.value = AuthState.Error("Tiempo de espera agotado")
+                onError("Tiempo de espera agotado")
+            } catch (e: Exception) {
+                _authState.value = AuthState.Error("Error al actualizar perfil: ${e.message}")
+                onError(e.message ?: "Error desconocido")
             }
         }
     }

@@ -263,10 +263,10 @@ fun ForgotPasswordScreen(
                         modifier = Modifier.weight(1f)
                     )
 
-                    // Imagen de la mascota triste
+                    // Imagen de cabito confundido
                     Image(
                         painter = painterResource(id = R.drawable.ic_dog_sad),
-                        contentDescription = "Mascota Tadeo Triste",
+                        contentDescription = "Mascota Tadeo confuso",
                         modifier = Modifier.size(120.dp)
                     )
                 }

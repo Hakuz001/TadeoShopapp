@@ -66,6 +66,11 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
+    // Firebase Storage
+        implementation("com.google.firebase:firebase-storage-ktx")
+
+    // Coil para cargar imágenes desde URL
+    implementation("io.coil-kt:coil-compose:2.5.0")
 
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")

@@ -1,6 +1,9 @@
 package com.example.tadeoshopapp
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -10,11 +13,15 @@ sealed class Screen(val route: String) {
     object Register : Screen("register")
     object ForgotPassword : Screen("forgot_password")
     object Home : Screen("home")
+    object EditProfile : Screen("edit_profile")
 }
 
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    val viewModel: AuthViewModel = viewModel()
+
+
 
     NavHost(
         navController = navController,
@@ -32,7 +39,8 @@ fun AppNavigation() {
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
-                }
+                },
+                viewModel = viewModel // Pasar el viewModel al LoginScreen
             )
         }
 
@@ -43,7 +51,8 @@ fun AppNavigation() {
                 },
                 onRegisterSuccess = {
                     navController.popBackStack()
-                }
+                },
+                viewModel = viewModel // Pasar el viewModel al RegisterScreen
             )
         }
 
@@ -51,12 +60,28 @@ fun AppNavigation() {
             ForgotPasswordScreen(
                 onBackClick = {
                     navController.popBackStack()
-                }
+                },
+                viewModel = viewModel //Pasar el viewModel al ForgotPasswordScreen
             )
         }
 
         composable(Screen.Home.route) {
-            HomeScreen()
+            HomeScreen(
+                navController = navController,
+                viewModel = viewModel
+            )
+        }
+
+        composable(Screen.EditProfile.route) {
+            EditProfileScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onSaveSuccess = {
+                    navController.popBackStack()
+                },
+                viewModel = viewModel
+            )
         }
     }
 }
