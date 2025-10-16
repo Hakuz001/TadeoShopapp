@@ -1,7 +1,11 @@
 package com.example.tadeoshopapp
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -10,7 +14,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.runtime.*
@@ -18,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -26,6 +31,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 
 @Composable
 fun EditProfileScreen(
@@ -40,9 +46,25 @@ fun EditProfileScreen(
     var apellidos by remember { mutableStateOf(currentUser?.apellidos ?: "") }
     var telefono by remember { mutableStateOf(currentUser?.telefono ?: "") }
     var biografia by remember { mutableStateOf(currentUser?.biografia ?: "") }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
     var nombresError by remember { mutableStateOf(false) }
     var showSuccessDialog by remember { mutableStateOf(false) }
+
+    // Launcher para seleccionar imagen de la galería
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            selectedImageUri = it
+            // Subir foto automáticamente cuando se selecciona
+            viewModel.uploadProfilePhoto(
+                imageUri = it,
+                onSuccess = {},
+                onError = {}
+            )
+        }
+    }
 
     // Actualizar campos cuando cambie el usuario
     LaunchedEffect(currentUser) {
@@ -116,29 +138,8 @@ fun EditProfileScreen(
         )
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.edit_profile_title),
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = stringResource(R.string.back_button)
-                        )
-                    }
-                },
-                backgroundColor = Color.White,
-                elevation = 4.dp
-            )
-        }
-    ) { paddingValues ->
+    Scaffold {
+            paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -149,6 +150,15 @@ fun EditProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(16.dp))
+
+            // Título centrado
+            Text(
+                text = stringResource(R.string.edit_profile_title),
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF212121),
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
 
             // Card del formulario
             Card(
@@ -165,19 +175,70 @@ fun EditProfileScreen(
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Foto de perfil
+                    // Foto de perfil con botón para cambiar
                     Box(
-                        modifier = Modifier
-                            .size(100.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFFE0E0E0)),
+                        modifier = Modifier.size(120.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_dog_logo),
-                            contentDescription = stringResource(R.string.logo_description),
-                            modifier = Modifier.size(75.dp)
-                        )
+                        // Mostrar foto de perfil actual o imagen seleccionada
+                        if (selectedImageUri != null) {
+                            // Mostrar imagen seleccionada
+                            AsyncImage(
+                                model = selectedImageUri,
+                                contentDescription = "Foto seleccionada",
+                                modifier = Modifier
+                                    .size(120.dp)
+                                    .clip(CircleShape)
+                                    .clickable { imagePickerLauncher.launch("image/*") },
+                                contentScale = ContentScale.Crop
+                            )
+                        } else if (!currentUser?.photoUrl.isNullOrEmpty()) {
+                            // Mostrar foto de perfil guardada
+                            AsyncImage(
+                                model = currentUser?.photoUrl,
+                                contentDescription = "Foto de perfil",
+                                modifier = Modifier
+                                    .size(120.dp)
+                                    .clip(CircleShape)
+                                    .clickable { imagePickerLauncher.launch("image/*") },
+                                contentScale = ContentScale.Crop,
+                                error = painterResource(id = R.drawable.ic_dog_logo)
+                            )
+                        } else {
+                            // Mostrar logo por defecto
+                            Box(
+                                modifier = Modifier
+                                    .size(120.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFE0E0E0))
+                                    .clickable { imagePickerLauncher.launch("image/*") },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.ic_dog_logo),
+                                    contentDescription = stringResource(R.string.logo_description),
+                                    modifier = Modifier.size(90.dp)
+                                )
+                            }
+                        }
+
+                        // Botón de cámara flotante
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF00ACC1))
+                                .clickable { imagePickerLauncher.launch("image/*") },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CameraAlt,
+                                contentDescription = "Cambiar foto",
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -389,7 +450,6 @@ fun EditProfileScreen(
                                     biografia = biografia,
                                     onSuccess = {
                                         showSuccessDialog = true
-                                        // Resetear estado después de mostrar el diálogo
                                         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                                             viewModel.resetAuthState()
                                         }, 500)

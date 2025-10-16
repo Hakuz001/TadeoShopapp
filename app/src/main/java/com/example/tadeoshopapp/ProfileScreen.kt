@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -25,6 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -86,18 +88,34 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Foto de perfil
-                Box(
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFE0E0E0)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_dog_logo),
-                        contentDescription = stringResource(R.string.logo_description),
-                        modifier = Modifier.size(90.dp)
-                    )
+                currentUser?.let { user ->
+                    if (!user.photoUrl.isNullOrEmpty()) {
+                        // Mostrar foto de perfil desde Firebase Storage
+                        AsyncImage(
+                            model = user.photoUrl,
+                            contentDescription = stringResource(R.string.logo_description),
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop,
+                            error = painterResource(id = R.drawable.ic_dog_logo)
+                        )
+                    } else {
+                        // Mostrar logo por defecto si no tiene foto
+                        Box(
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFE0E0E0)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_dog_logo),
+                                contentDescription = stringResource(R.string.logo_description),
+                                modifier = Modifier.size(90.dp)
+                            )
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))

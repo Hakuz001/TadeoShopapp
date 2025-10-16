@@ -1,10 +1,12 @@
 package com.example.tadeoshopapp
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -28,13 +30,15 @@ data class User(
     val fechaRegistro: Long = System.currentTimeMillis(),
     val biografia: String = "",
     val telefono: String = "",
-    val productosPublicados: Int = 0
+    val productosPublicados: Int = 0,
+    val photoUrl: String = "" // URL de la foto de perfil
 )
 
 class AuthViewModel : ViewModel() {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val storage: FirebaseStorage = FirebaseStorage.getInstance()
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState: StateFlow<AuthState> = _authState
@@ -243,6 +247,60 @@ class AuthViewModel : ViewModel() {
                 onError("Tiempo de espera agotado")
             } catch (e: Exception) {
                 _authState.value = AuthState.Error("Error al actualizar perfil: ${e.message}")
+                onError(e.message ?: "Error desconocido")
+            }
+        }
+    }
+
+    // 🆕 Nueva función: Subir foto de perfil
+    fun uploadProfilePhoto(
+        imageUri: Uri,
+        onSuccess: () -> Unit = {},
+        onError: (String) -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            try {
+                _authState.value = AuthState.Loading
+
+                val userId = auth.currentUser?.uid
+                if (userId == null) {
+                    onError("Usuario no autenticado")
+                    _authState.value = AuthState.Error("Usuario no autenticado")
+                    return@launch
+                }
+
+                // Referencia al Storage
+                val storageRef = storage.reference
+                    .child("profile_photos")
+                    .child("$userId.jpg")
+
+                // Subir imagen
+                withTimeout(30000) {
+                    storageRef.putFile(imageUri).await()
+                }
+
+                // Obtener URL de descarga
+                val downloadUrl = storageRef.downloadUrl.await().toString()
+
+                // Actualizar Firestore con la URL
+                withTimeout(10000) {
+                    firestore.collection("users")
+                        .document(userId)
+                        .update("photoUrl", downloadUrl)
+                        .await()
+                }
+
+                // Recargar datos del usuario
+                loadUserData(userId)
+
+                _authState.value = AuthState.Success("Foto actualizada exitosamente")
+                onSuccess()
+
+            } catch (e: TimeoutCancellationException) {
+                _authState.value = AuthState.Error("Tiempo de espera agotado")
+                onError("Tiempo de espera agotado")
+            } catch (e: Exception) {
+                _authState.value = AuthState.Error("Error al subir foto: ${e.message}")
                 onError(e.message ?: "Error desconocido")
             }
         }
