@@ -1,12 +1,12 @@
 package com.example.tadeoshopapp
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.tadeoshopapp.ui.theme.AddProductScreen
+import com.example.tadeoshopapp.ui.theme.EditProductScreen
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
@@ -14,14 +14,16 @@ sealed class Screen(val route: String) {
     object ForgotPassword : Screen("forgot_password")
     object Home : Screen("home")
     object EditProfile : Screen("edit_profile")
+    object Products : Screen("products") // Mis productos del vendedor
+    object AddProduct : Screen("add_product") // Agregar producto
+    object EditProduct : Screen("edit_product") // Editar producto
 }
 
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    val viewModel: AuthViewModel = viewModel()
-
-
+    val authViewModel: AuthViewModel = viewModel()
+    val productViewModel: ProductViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -40,7 +42,7 @@ fun AppNavigation() {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 },
-                viewModel = viewModel // Pasar el viewModel al LoginScreen
+                viewModel = authViewModel
             )
         }
 
@@ -52,7 +54,7 @@ fun AppNavigation() {
                 onRegisterSuccess = {
                     navController.popBackStack()
                 },
-                viewModel = viewModel // Pasar el viewModel al RegisterScreen
+                viewModel = authViewModel
             )
         }
 
@@ -61,14 +63,15 @@ fun AppNavigation() {
                 onBackClick = {
                     navController.popBackStack()
                 },
-                viewModel = viewModel //Pasar el viewModel al ForgotPasswordScreen
+                viewModel = authViewModel
             )
         }
 
         composable(Screen.Home.route) {
             HomeScreen(
                 navController = navController,
-                viewModel = viewModel
+                viewModel = authViewModel,
+                productViewModel = productViewModel
             )
         }
 
@@ -80,8 +83,60 @@ fun AppNavigation() {
                 onSaveSuccess = {
                     navController.popBackStack()
                 },
-                viewModel = viewModel
+                viewModel = authViewModel
             )
+        }
+
+        // Pantalla de productos del vendedor (Mis Productos)
+        composable(Screen.Products.route) {
+            ProductsScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onAddProductClick = {
+                    navController.navigate(Screen.AddProduct.route)
+                },
+                onEditProductClick = { product ->
+                    navController.navigate(Screen.EditProduct.route)
+                },
+                authViewModel = authViewModel,
+                productViewModel = productViewModel
+            )
+        }
+
+        // Pantalla para agregar producto
+        composable(Screen.AddProduct.route) {
+            AddProductScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onPublishSuccess = {
+                    navController.popBackStack()
+                },
+                authViewModel = authViewModel,
+                productViewModel = productViewModel
+            )
+        }
+
+        // Pantalla para editar producto
+        composable(Screen.EditProduct.route) {
+            val selectedProduct = productViewModel.selectedProduct.value
+            if (selectedProduct != null) {
+                EditProductScreen(
+                    product = selectedProduct,
+                    onBackClick = {
+                        productViewModel.clearSelectedProduct()
+                        navController.popBackStack()
+                    },
+                    onSaveSuccess = {
+                        productViewModel.clearSelectedProduct()
+                        productViewModel.loadMyProducts()
+                        navController.popBackStack()
+                    },
+                    authViewModel = authViewModel,
+                    productViewModel = productViewModel
+                )
+            }
         }
     }
 }

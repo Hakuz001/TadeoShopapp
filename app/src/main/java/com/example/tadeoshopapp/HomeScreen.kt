@@ -19,9 +19,10 @@ import androidx.navigation.NavHostController
 @Composable
 fun HomeScreen(
     navController: NavHostController,
-    viewModel: AuthViewModel = viewModel()
+    viewModel: AuthViewModel = viewModel(),
+    productViewModel: ProductViewModel = viewModel()
 ) {
-    var selectedTab by remember { mutableStateOf(1) } // 0=Mensajes, 1=Perfil, 2=Productos
+    var selectedTab by remember { mutableStateOf(1) }
 
     Scaffold(
         bottomBar = {
@@ -79,7 +80,7 @@ fun HomeScreen(
                     unselectedContentColor = Color(0xFF999999)
                 )
 
-                // Productos
+                // Productos (Marketplace menu)
                 BottomNavigationItem(
                     icon = {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -118,18 +119,20 @@ fun HomeScreen(
                         navController.navigate(Screen.EditProfile.route)
                     },
                     onLogoutClick = {
-                        // 🔥 ARREGLADO: Primero logout, luego navegar al Login
                         viewModel.logout()
                         navController.navigate(Screen.Login.route) {
                             popUpTo(0) { inclusive = true }
                         }
                     },
                     onViewProductsClick = {
-                        selectedTab = 2
+                        // Navegar a "Mis Productos"
+                        navController.navigate(Screen.Products.route)
                     },
                     viewModel = viewModel
                 )
-                2 -> ProductsPlaceholderScreen()
+                2 -> MarketplaceScreen(
+                    productViewModel = productViewModel
+                )
             }
         }
     }
@@ -144,27 +147,6 @@ fun MessagesPlaceholderScreen() {
     ) {
         Text(
             text = "📬 Mensajes",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Próximamente...",
-            fontSize = 16.sp,
-            color = Color.Gray
-        )
-    }
-}
-
-@Composable
-fun ProductsPlaceholderScreen() {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "🛍 Productos",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )

@@ -252,7 +252,7 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    // 🆕 Nueva función: Subir foto de perfil
+    // función:Subir foto de perfil
     fun uploadProfilePhoto(
         imageUri: Uri,
         onSuccess: () -> Unit = {},

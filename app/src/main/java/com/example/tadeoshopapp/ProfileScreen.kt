@@ -39,7 +39,7 @@ fun ProfileScreen(
 ) {
     val currentUser by viewModel.currentUser.collectAsState()
 
-    // Mostrar loading si no hay usuario cargado
+    
     if (currentUser == null) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -176,7 +176,7 @@ fun ProfileScreen(
                         text = dateFormat.format(date)
                     )
 
-                    // Solo mostrar productos publicados si es Vendedor
+                    //  mostrar productos publicados si es Vendedor
                     if (user.tipoUsuario == "Vendedor") {
                         Spacer(modifier = Modifier.height(12.dp))
 
@@ -186,7 +186,7 @@ fun ProfileScreen(
                         )
                     }
 
-                    // Biografía (solo si tiene algo escrito)
+                    // Biografía
                     if (user.biografia.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(16.dp))
 

@@ -6,7 +6,7 @@
     <string name="email_label">Correo Electrónico</string>
     <string name="password_label">Contraseña</string>
     <string name="email_placeholder">Ejemplo@utadeo.edu.co</string>
-    <string name="password_placeholder">Introduce tu contraseña</string>
+    <string name="password_placeholder">*****************</string>
     <string name="loading">Cargando...</string>
     <string name="continue_button">Continuar</string>
     <string name="understood_button">Entendido</string>
@@ -81,6 +81,60 @@
     <string name="nav_messages">Mensajes</string>
     <string name="nav_profile">Perfil</string>
     <string name="nav_products">Productos</string>
+
+    <!-- Products Screen -->
+    <string name="products_title">Mis Productos</string>
+    <string name="add_product_button">+ Agregar producto</string>
+    <string name="no_products">No tienes productos publicados</string>
+    <string name="no_products_message">Comienza a vender publicando tu primer producto</string>
+    <string name="product_published">Publicado</string>
+    <string name="product_draft">Borrador</string>
+    <string name="product_sold">Vendido</string>
+    <string name="edit_button">Editar</string>
+    <string name="delete_button">Eliminar</string>
+    <string name="views_count">%d vistas</string>
+    <string name="delete_product_confirm">¿Eliminar este producto?</string>
+    <string name="delete_product_message">Esta acción no se puede deshacer</string>
+
+    <!-- Add/Edit Product Screen -->
+    <string name="new_product_title">Nuevo producto</string>
+    <string name="edit_product_title_screen">Editar producto</string>
+    <string name="add_photos">Agregar fotos</string>
+    <string name="edit_photos">Editar fotos</string>
+    <string name="product_title_label">Título del producto</string>
+    <string name="product_title_hint">Título del producto</string>
+    <string name="category_label">Categoría</string>
+    <string name="select_category">Selecciona una categoría</string>
+    <string name="price_label">Precio (COP)</string>
+    <string name="quantity_label">Cantidad</string>
+    <string name="type_label">Tipo</string>
+    <string name="new_condition">Nuevo</string>
+    <string name="used_condition">Usado</string>
+    <string name="description_label">Descripción</string>
+    <string name="description_hint">Máximo 150 palabras</string>
+    <string name="save_draft_button">Guardar borrador</string>
+    <string name="publish_button">Publicar</string>
+    <string name="product_published_success">Producto publicado exitosamente</string>
+    <string name="product_draft_saved">Borrador guardado</string>
+    <string name="product_deleted_success">Producto eliminado</string>
+
+    <!-- Categories -->
+    <string name="category_electronics">Electrónica</string>
+    <string name="category_clothing">Ropa y Accesorios</string>
+    <string name="category_food">Alimentos</string>
+    <string name="category_books">Libros</string>
+    <string name="category_sports">Deportes</string>
+    <string name="category_home">Hogar y Jardín</string>
+    <string name="category_toys">Juguetes</string>
+    <string name="category_other">Otros</string>
+
+    <!-- Validations -->
+    <string name="error_title_required">El título es obligatorio</string>
+    <string name="error_price_required">El precio es obligatorio</string>
+    <string name="error_price_invalid">Ingresa un precio válido</string>
+    <string name="error_category_required">Selecciona una categoría</string>
+    <string name="error_description_min">La descripción debe tener mínimo 150 caracteres</string>
+    <string name="error_photos_required">Agrega al menos una foto</string>
 
     <!-- Firebase Errors -->
     <string name="error_email_already_in_use">Este correo ya está registrado</string>
