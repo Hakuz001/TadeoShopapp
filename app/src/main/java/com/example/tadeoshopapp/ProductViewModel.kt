@@ -94,7 +94,7 @@ class ProductViewModel : ViewModel() {
         }
     }
 
-    // Cargar todos los productos del marketplace
+    // Cargar TODOS los productos del marketplace
     fun loadAllProducts() {
         viewModelScope.launch {
             try {
@@ -205,7 +205,7 @@ class ProductViewModel : ViewModel() {
         }
     }
 
-    //  EDITAR PRODUCTO
+    // Editar producto
     fun updateProduct(
         productId: String,
         titulo: String,
@@ -285,7 +285,7 @@ class ProductViewModel : ViewModel() {
         }
     }
 
-    // Eliminar producto
+    // 🆕 Eliminar producto CON sus imágenes
     fun deleteProduct(
         productId: String,
         onSuccess: () -> Unit = {},
@@ -301,6 +301,27 @@ class ProductViewModel : ViewModel() {
                     return@launch
                 }
 
+                // 1. Obtener el producto para conseguir las URLs de las imágenes
+                val productDoc = firestore.collection("products")
+                    .document(productId)
+                    .get()
+                    .await()
+
+                val product = productDoc.toObject(Product::class.java)
+
+                // 2. Eliminar las imágenes de Storage
+                product?.imagenesUrls?.forEach { imageUrl ->
+                    try {
+                        // Obtener la referencia de Storage desde la URL
+                        val storageRef = storage.getReferenceFromUrl(imageUrl)
+                        storageRef.delete().await()
+                    } catch (e: Exception) {
+                        // Si falla eliminar una imagen, continuar con las demás
+                        // No queremos que falle todo el proceso si una imagen ya fue eliminada
+                    }
+                }
+
+                // 3. Eliminar el documento de Firestore
                 withTimeout(10000) {
                     firestore.collection("products")
                         .document(productId)
@@ -308,7 +329,10 @@ class ProductViewModel : ViewModel() {
                         .await()
                 }
 
+                // 4. Actualizar contador
                 updateProductCount(userId)
+
+                // 5. Recargar productos
                 loadMyProducts()
 
                 _productState.value = ProductState.Success("Producto eliminado exitosamente")
@@ -338,7 +362,7 @@ class ProductViewModel : ViewModel() {
                     .await()
 
             } catch (e: Exception) {
-                // Ignorar errores al actualiz
+                // Ignorar errores al actualizar contador
             }
         }
     }
