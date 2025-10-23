@@ -28,7 +28,8 @@ import java.util.*
 
 @Composable
 fun MarketplaceScreen(
-    productViewModel: ProductViewModel = viewModel()
+    productViewModel: ProductViewModel = viewModel(),
+    onProductClick: (Product) -> Unit = {}
 ) {
     val allProducts by productViewModel.allProducts.collectAsState()
     val productState by productViewModel.productState.collectAsState()
@@ -158,7 +159,10 @@ fun MarketplaceScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(filteredProducts) { product ->
-                            MarketplaceProductCard(product = product)
+                            MarketplaceProductCard(
+                                product = product,
+                                onClick = { onProductClick(product) }
+                            )
                         }
                     }
                 }
@@ -168,14 +172,15 @@ fun MarketplaceScreen(
 }
 
 @Composable
-fun MarketplaceProductCard(product: Product) {
+fun MarketplaceProductCard(
+    product: Product,
+    onClick: () -> Unit = {}
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(260.dp)
-            .clickable {
-                //  Navegar a detalles del producto
-            },
+            .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         elevation = 3.dp,
         backgroundColor = Color.White

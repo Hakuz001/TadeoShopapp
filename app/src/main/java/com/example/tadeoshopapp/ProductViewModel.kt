@@ -22,6 +22,8 @@ data class Product(
     val estado: String = "Publicado",
     val vendedorId: String = "",
     val vendedorNombre: String = "",
+    val vendedorTelefono: String = "",
+    val vendedorEmail: String = "",
     val imagenesUrls: List<String> = emptyList(),
     val fechaPublicacion: Long = System.currentTimeMillis(),
     val vistas: Int = 0
@@ -147,6 +149,8 @@ class ProductViewModel : ViewModel() {
                     .await()
 
                 val vendedorNombre = userDoc.getString("nombre") ?: "Usuario"
+                val vendedorTelefono = userDoc.getString("telefono") ?: "573001234567"
+                val vendedorEmail = userDoc.getString("email") ?: "vendedor@ejemplo.com"
 
                 val imageUrls = mutableListOf<String>()
                 imageUris.forEachIndexed { index, uri ->
@@ -180,6 +184,8 @@ class ProductViewModel : ViewModel() {
                     estado = "Publicado",
                     vendedorId = userId,
                     vendedorNombre = vendedorNombre,
+                    vendedorTelefono = vendedorTelefono,
+                    vendedorEmail = vendedorEmail,
                     imagenesUrls = imageUrls,
                     fechaPublicacion = System.currentTimeMillis()
                 )
