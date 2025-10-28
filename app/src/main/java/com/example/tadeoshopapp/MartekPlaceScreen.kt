@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,18 +22,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import java.text.NumberFormat
 import java.util.*
 
 @Composable
-fun MarketplaceScreen(
-    productViewModel: ProductViewModel = viewModel(),
-    onProductClick: (Product) -> Unit = {}
+fun MarktekPlaceScreen(
+    navController: NavHostController,
+    onCartClick: () -> Unit,
+    productViewModel: ProductViewModel,
+    cartViewModel: CartViewModel // ⭐ RECIBIR como parámetro, no crear con viewModel()
 ) {
     val allProducts by productViewModel.allProducts.collectAsState()
     val productState by productViewModel.productState.collectAsState()
+    val cartItems by cartViewModel.cartItems.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
 
     // Cargar productos cuando se muestra la pantalla
@@ -51,6 +55,9 @@ fun MarketplaceScreen(
         }
     }
 
+    // Calcular total de items en el carrito
+    val cartItemCount = cartItems.sumOf { it.quantity }
+
     Scaffold(
         topBar = {
             Column(
@@ -58,7 +65,7 @@ fun MarketplaceScreen(
                     .fillMaxWidth()
                     .background(Color.White)
             ) {
-                // Header
+                // Header con ícono de carrito
                 TopAppBar(
                     title = {
                         Text(
@@ -67,6 +74,34 @@ fun MarketplaceScreen(
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF212121)
                         )
+                    },
+                    actions = {
+                        // Badge del carrito
+                        BadgedBox(
+                            badge = {
+                                if (cartItemCount > 0) {
+                                    Badge(
+                                        backgroundColor = Color(0xFFE53935)
+                                    ) {
+                                        Text(
+                                            text = cartItemCount.toString(),
+                                            color = Color.White,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                            }
+                        ) {
+                            IconButton(onClick = onCartClick) {
+                                Icon(
+                                    imageVector = Icons.Default.ShoppingCart,
+                                    contentDescription = stringResource(R.string.cart_title),
+                                    tint = Color(0xFF00ACC1),
+                                    modifier = Modifier.size(28.dp)
+                                )
+                            }
+                        }
                     },
                     backgroundColor = Color.White,
                     elevation = 0.dp
@@ -114,7 +149,7 @@ fun MarketplaceScreen(
         ) {
             when {
                 productState is ProductState.Loading && allProducts.isEmpty() -> {
-                    // Mostrar carga inicial
+                    // Mostrar loading inicial
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -161,7 +196,9 @@ fun MarketplaceScreen(
                         items(filteredProducts) { product ->
                             MarketplaceProductCard(
                                 product = product,
-                                onClick = { onProductClick(product) }
+                                onClick = {
+                                    navController.navigate(Screen.ProductDetail.createRoute(product.id))
+                                }
                             )
                         }
                     }
@@ -174,13 +211,13 @@ fun MarketplaceScreen(
 @Composable
 fun MarketplaceProductCard(
     product: Product,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(260.dp)
-            .clickable { onClick() },
+            .height(240.dp)
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         elevation = 3.dp,
         backgroundColor = Color.White
@@ -208,7 +245,7 @@ fun MarketplaceProductCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Sin foto",
+                        text = stringResource(R.string.no_photo),
                         fontSize = 12.sp,
                         color = Color(0xFF999999)
                     )

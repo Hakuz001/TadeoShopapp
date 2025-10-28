@@ -106,7 +106,7 @@
     <string name="category_label">Categoría</string>
     <string name="select_category">Selecciona una categoría</string>
     <string name="price_label">Precio (COP)</string>
-    <string name="quantity_label">Cantidad</string>
+
     <string name="type_label">Tipo</string>
     <string name="new_condition">Nuevo</string>
     <string name="used_condition">Usado</string>
@@ -157,4 +157,50 @@
     <string name="error_icon_description">Error</string>
     <string name="sad_dog_description">Mascota Tadeo Triste</string>
     <string name="back_icon_description">Volver</string>
+
+
+    <!-- Cart Screen -->
+    <string name="cart_title">Mi Carrito</string>
+    <string name="cart_total_products">Total de productos %1$d</string>
+    <string name="empty_cart_message">Tu carrito está vacío</string>
+    <string name="remove_all_button">Eliminar Pedidos</string>
+    <string name="delivery_title">Entrega</string>
+    <string name="delivery_info">Pedidos encima de $20.000\ntienen Envío GRATIS</string>
+    <string name="cart_total_label">Total</string>
+    <string name="checkout_button">FINALIZAR COMPRA</string>
+    <string name="checkout_confirm_title">Finalizar Compra</string>
+    <string name="checkout_confirm_message">¿Estás seguro de finalizar tu compra?\n\nSe creará una orden y podrás contactar con el vendedor.</string>
+    <string name="confirm_button">Confirmar</string>
+    <string name="used_label">Usado</string>
+    <string name="new_label">Nuevo</string>
+    <string name="add_to_cart_button">Agregar al carrito</string>
+    <string name="remove_from_cart_button">Quitar del carrito</string>
+    <string name="decrease_quantity">Disminuir</string>
+    <string name="increase_quantity">Aumentar</string>
+    <string name="no_photo">Sin foto</string>
+    <string name="in_cart_badge">En carrito</string>
+
+    <!-- Checkout Success Screen -->
+    <string name="checkout_success_title">¡Compra Confirmada!</string>
+    <string name="checkout_success_message">Tus productos han sido apartados correctamente.</string>
+    <string name="checkout_success_description">Para finalizar tu compra y coordinar el método de pago y entrega, contacta directamente con el vendedor.</string>
+    <string name="contact_seller_button">Contactar vendedor</string>
+    <string name="back_to_menu_button">Volver al Menú Principal</string>
+
+    <!-- Orders - Compras y Ventas -->
+    <string name="my_purchases">Mis Compras</string>
+    <string name="my_sales">Mis Ventas</string>
+    <string name="no_purchases">No tienes compras</string>
+    <string name="no_sales">No tienes ventas</string>
+    <string name="order_status_pending">Pendiente</string>
+    <string name="order_status_confirmed">Confirmado</string>
+    <string name="order_status_delivered">Entregado</string>
+    <string name="order_status_cancelled">Cancelado</string>
+    <string name="order_number">Orden #%1$s</string>
+    <string name="buyer_label">Comprador:</string>
+    <string name="seller_label">Vendedor:</string>
+    <string name="quantity_label">Cantidad: %1$d</string>
+    <string name="total_to_receive">Total a recibir</string>
+    <string name="update_status">Actualizar estado</string>
+
 </resources>

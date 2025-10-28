@@ -4,10 +4,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -21,11 +22,15 @@ sealed class Screen(val route: String) {
     object Register : Screen("register")
     object ForgotPassword : Screen("forgot_password")
     object Home : Screen("home")
-    object Messages : Screen("messages") // Pantalla de mensajes
+    object Messages : Screen("messages")
     object EditProfile : Screen("edit_profile")
-    object Products : Screen("products") // Mis productos del vendedor
-    object AddProduct : Screen("add_product") // Agregar producto
-    object EditProduct : Screen("edit_product") // Editar producto
+    object Products : Screen("products")
+    object AddProduct : Screen("add_product")
+    object EditProduct : Screen("edit_product")
+    object Cart : Screen("cart")
+    object CheckoutSuccess : Screen("checkout_success")
+    object MyPurchases : Screen("my_purchases") // ⭐ NUEVO
+    object MySales : Screen("my_sales") // ⭐ NUEVO
     object ProductDetail : Screen("product_detail/{productId}") {
         fun createRoute(productId: String) = "product_detail/$productId"
     }
@@ -34,8 +39,12 @@ sealed class Screen(val route: String) {
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+
+    // ViewModels compartidos
     val authViewModel: AuthViewModel = viewModel()
     val productViewModel: ProductViewModel = viewModel()
+    val cartViewModel: CartViewModel = viewModel()
+    val ordersViewModel: OrdersViewModel = viewModel() // ⭐ NUEVO
 
     NavHost(
         navController = navController,
@@ -83,7 +92,9 @@ fun AppNavigation() {
             HomeScreen(
                 navController = navController,
                 viewModel = authViewModel,
-                productViewModel = productViewModel
+                productViewModel = productViewModel,
+                cartViewModel = cartViewModel,
+                initialTab = 2
             )
         }
 
@@ -107,7 +118,6 @@ fun AppNavigation() {
             )
         }
 
-        // Pantalla de productos del vendedor (Mis Productos)
         composable(Screen.Products.route) {
             ProductsScreen(
                 onBackClick = {
@@ -124,7 +134,6 @@ fun AppNavigation() {
             )
         }
 
-        // Pantalla para agregar producto
         composable(Screen.AddProduct.route) {
             AddProductScreen(
                 onBackClick = {
@@ -138,12 +147,12 @@ fun AppNavigation() {
             )
         }
 
-        // Pantalla para editar producto
         composable(Screen.EditProduct.route) {
-            val selectedProduct = productViewModel.selectedProduct.value
+            val selectedProduct by productViewModel.selectedProduct.collectAsState()
+
             if (selectedProduct != null) {
                 EditProductScreen(
-                    product = selectedProduct,
+                    product = selectedProduct!!,
                     onBackClick = {
                         productViewModel.clearSelectedProduct()
                         navController.popBackStack()
@@ -159,11 +168,61 @@ fun AppNavigation() {
             }
         }
 
-        // Pantalla de detalles del producto
+        composable(Screen.Cart.route) {
+            CartScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onCheckoutSuccess = {
+                    navController.navigate(Screen.CheckoutSuccess.route) {
+                        popUpTo(Screen.Cart.route) { inclusive = true }
+                    }
+                },
+                cartViewModel = cartViewModel
+            )
+        }
+
+        composable(Screen.CheckoutSuccess.route) {
+            CheckoutSuccessScreen(
+                onBackToMenu = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
+                    }
+                },
+                onContactSeller = {
+                    navController.navigate(Screen.Messages.route) {
+                        popUpTo(Screen.Home.route) { inclusive = false }
+                    }
+                },
+                cartViewModel = cartViewModel
+            )
+        }
+
+        // ⭐ NUEVA PANTALLA - Mis Compras
+        composable(Screen.MyPurchases.route) {
+            MyPurchasesScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                ordersViewModel = ordersViewModel
+            )
+        }
+
+        // ⭐ NUEVA PANTALLA - Mis Ventas
+        composable(Screen.MySales.route) {
+            MySalesScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                ordersViewModel = ordersViewModel
+            )
+        }
+
         composable(Screen.ProductDetail.route) { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId")
-            val product = productViewModel.allProducts.value.find { it.id == productId }
-            
+            val allProducts by productViewModel.allProducts.collectAsState()
+            val product = allProducts.find { it.id == productId }
+
             if (product != null) {
                 ProductDetailScreen(
                     product = product,
@@ -171,19 +230,19 @@ fun AppNavigation() {
                         navController.popBackStack()
                     },
                     onContactSeller = { sellerId ->
-                        // Implementar funcionalidad de contacto
-                        // Por ahora solo mostramos un mensaje
-                    },
-                    onNavigateToMessages = {
-                        // Navegar a la pantalla de mensajes
                         navController.navigate(Screen.Messages.route) {
                             popUpTo(Screen.Home.route) { inclusive = false }
                         }
                     },
-                    authViewModel = authViewModel
+                    onNavigateToMessages = {
+                        navController.navigate(Screen.Messages.route) {
+                            popUpTo(Screen.Home.route) { inclusive = false }
+                        }
+                    },
+                    authViewModel = authViewModel,
+                    cartViewModel = cartViewModel
                 )
             } else {
-                // Mostrar pantalla de error si no se encuentra el producto
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center

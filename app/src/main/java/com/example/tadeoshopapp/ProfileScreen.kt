@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.ShoppingBag
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import java.text.SimpleDateFormat
 import java.util.*
@@ -35,11 +37,13 @@ fun ProfileScreen(
     onEditProfileClick: () -> Unit = {},
     onLogoutClick: () -> Unit = {},
     onViewProductsClick: () -> Unit = {},
+    onMyPurchasesClick: () -> Unit = {}, // ⭐ NUEVO
+    onMySalesClick: () -> Unit = {}, // ⭐ NUEVO
     viewModel: AuthViewModel = viewModel()
 ) {
     val currentUser by viewModel.currentUser.collectAsState()
 
-    
+
     if (currentUser == null) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -219,9 +223,61 @@ fun ProfileScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Botón "Ver mis productos" solo para vendedores
+                // ⭐ NUEVO - Botón "Mis Compras" (para todos)
+                OutlinedButton(
+                    onClick = onMyPurchasesClick,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(25.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color(0xFF00ACC1)
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ShoppingCart,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(R.string.my_purchases),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Botones específicos para vendedores
                 currentUser?.let { user ->
                     if (user.tipoUsuario == "Vendedor") {
+                        // ⭐ NUEVO - Botón "Mis Ventas"
+                        OutlinedButton(
+                            onClick = onMySalesClick,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp),
+                            shape = RoundedCornerShape(25.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color(0xFF4CAF50)
+                            )
+                        ) {
+                            Text(
+                                text = "💰",
+                                fontSize = 20.sp
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.my_sales),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Botón "Ver mis productos"
                         OutlinedButton(
                             onClick = onViewProductsClick,
                             modifier = Modifier

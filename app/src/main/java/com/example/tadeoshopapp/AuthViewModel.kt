@@ -82,6 +82,7 @@ class AuthViewModel : ViewModel() {
                         tipoUsuario = tipoUsuario,
                         fechaRegistro = System.currentTimeMillis()
                     )
+                    
 
                     try {
                         withTimeout(30000) {
