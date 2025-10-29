@@ -9,6 +9,8 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -457,17 +459,46 @@ fun CartItemCard(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Badge Usado
-            Surface(
-                shape = RoundedCornerShape(4.dp),
-                color = Color(0xFFF5F5F5)
+            // Información de tipo y stock
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = stringResource(R.string.used_label),
-                    fontSize = 11.sp,
-                    color = Color(0xFF666666),
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                )
+                // Badge de tipo (Nuevo/Usado)
+                Surface(
+                    shape = RoundedCornerShape(4.dp),
+                    color = if (cartItem.product.tipo == "Nuevo") Color(0xFFE3F2FD) else Color(0xFFFFF3E0)
+                ) {
+                    Text(
+                        text = cartItem.product.tipo,
+                        fontSize = 11.sp,
+                        color = if (cartItem.product.tipo == "Nuevo") Color(0xFF1976D2) else Color(0xFFF57C00),
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+
+                // Información de stock disponible
+                Surface(
+                    shape = RoundedCornerShape(4.dp),
+                    color = if (cartItem.product.cantidad > 0) Color(0xFFE8F5E8) else Color(0xFFFFEBEE)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            if (cartItem.product.cantidad > 0) Icons.Default.Check else Icons.Default.Close,
+                            contentDescription = if (cartItem.product.cantidad > 0) "Disponible" else "Agotado",
+                            tint = if (cartItem.product.cantidad > 0) Color(0xFF4CAF50) else Color(0xFFE53935),
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = if (cartItem.product.cantidad > 0) "${cartItem.product.cantidad} disponibles" else "Agotado",
+                            fontSize = 11.sp,
+                            color = if (cartItem.product.cantidad > 0) Color(0xFF2E7D32) else Color(0xFFD32F2F)
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -499,24 +530,39 @@ fun CartItemCard(
                     )
                 }
 
-                // Cantidad
-                Text(
-                    text = cartItem.quantity.toString(),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF212121),
-                    modifier = Modifier.padding(horizontal = 20.dp)
-                )
+                // Cantidad con indicador de límite
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = cartItem.quantity.toString(),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (cartItem.quantity >= cartItem.product.cantidad) Color(0xFFE53935) else Color(0xFF212121),
+                        modifier = Modifier.padding(horizontal = 20.dp)
+                    )
+                    
+                    // Indicador de límite alcanzado
+                    if (cartItem.quantity >= cartItem.product.cantidad) {
+                        Text(
+                            text = "(máx)",
+                            fontSize = 12.sp,
+                            color = Color(0xFFE53935),
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
 
-                // Botón más
+                // Botón más (deshabilitado si alcanzó el límite)
                 IconButton(
                     onClick = onIncrement,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(32.dp),
+                    enabled = cartItem.quantity < cartItem.product.cantidad
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = stringResource(R.string.increase_quantity),
-                        tint = Color(0xFF00ACC1),
+                        tint = if (cartItem.quantity < cartItem.product.cantidad) Color(0xFF00ACC1) else Color(0xFFCCCCCC),
                         modifier = Modifier.size(20.dp)
                     )
                 }

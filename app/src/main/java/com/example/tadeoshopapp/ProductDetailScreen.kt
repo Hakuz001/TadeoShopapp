@@ -11,6 +11,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -137,6 +138,57 @@ fun ProductDetailScreen(
                         color = Color(0xFF00ACC1)
                     )
 
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Información de disponibilidad y tipo
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        // Cantidad disponible
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (product.cantidad > 0) Color(0xFFE8F5E8) else Color(0xFFFFEBEE)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    if (product.cantidad > 0) Icons.Default.Check else Icons.Default.Close,
+                                    contentDescription = if (product.cantidad > 0) "Disponible" else "Agotado",
+                                    tint = if (product.cantidad > 0) Color(0xFF4CAF50) else Color(0xFFE53935),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = if (product.cantidad > 0) "${product.cantidad} disponibles" else "Agotado",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = if (product.cantidad > 0) Color(0xFF2E7D32) else Color(0xFFD32F2F)
+                                )
+                            }
+                        }
+
+                        // Tipo del producto
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (product.tipo == "Nuevo") Color(0xFFE3F2FD) else Color(0xFFFFF3E0)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = product.tipo,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = if (product.tipo == "Nuevo") Color(0xFF1976D2) else Color(0xFFF57C00)
+                                )
+                            }
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // Categoría
@@ -212,7 +264,7 @@ fun ProductDetailScreen(
                         // Botón Agregar al Carrito
                         Button(
                             onClick = {
-                                if (!isInCart) {
+                                if (!isInCart && product.cantidad > 0) {
                                     cartViewModel.addToCart(product)
                                     showAddedToCartSnackbar = true
                                 }
@@ -221,23 +273,36 @@ fun ProductDetailScreen(
                                 .fillMaxWidth()
                                 .height(56.dp),
                             colors = ButtonDefaults.buttonColors(
-                                backgroundColor = if (isInCart) Color(0xFF4CAF50) else Color(0xFF00ACC1)
+                                backgroundColor = when {
+                                    isInCart -> Color(0xFF4CAF50)
+                                    product.cantidad <= 0 -> Color(0xFFCCCCCC)
+                                    else -> Color(0xFF00ACC1)
+                                }
                             ),
                             shape = RoundedCornerShape(28.dp),
                             elevation = ButtonDefaults.elevation(
                                 defaultElevation = 4.dp,
                                 pressedElevation = 8.dp
-                            )
+                            ),
+                            enabled = product.cantidad > 0
                         ) {
                             Icon(
-                                imageVector = if (isInCart) Icons.Default.Check else Icons.Default.ShoppingCart,
+                                imageVector = when {
+                                    isInCart -> Icons.Default.Check
+                                    product.cantidad <= 0 -> Icons.Default.Close
+                                    else -> Icons.Default.ShoppingCart
+                                },
                                 contentDescription = null,
                                 tint = Color.White,
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = if (isInCart) "✓ Agregado al carrito" else stringResource(R.string.add_to_cart_button),
+                                text = when {
+                                    isInCart -> "✓ Agregado al carrito"
+                                    product.cantidad <= 0 -> "Producto agotado"
+                                    else -> stringResource(R.string.add_to_cart_button)
+                                },
                                 color = Color.White,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold

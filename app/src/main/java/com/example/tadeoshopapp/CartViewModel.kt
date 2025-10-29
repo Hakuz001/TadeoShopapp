@@ -68,13 +68,26 @@ class CartViewModel : ViewModel() {
         val existingItemIndex = currentItems.indexOfFirst { it.productId == product.id }
 
         if (existingItemIndex != -1) {
-            // Si ya existe, incrementar cantidad
+            // Si ya existe, verificar stock antes de incrementar
             val existingItem = currentItems[existingItemIndex]
+            val newQuantity = existingItem.quantity + 1
+            
+            if (newQuantity > product.cantidad) {
+                _cartState.value = CartState.Error("No hay suficiente stock. Solo hay ${product.cantidad} unidades disponibles.")
+                return
+            }
+            
             currentItems[existingItemIndex] = existingItem.copy(
-                quantity = existingItem.quantity + 1
+                quantity = newQuantity
             )
         } else {
-            // Si no existe, agregarlo
+            // Si no existe, verificar que haya stock disponible
+            if (product.cantidad <= 0) {
+                _cartState.value = CartState.Error("Este producto no está disponible.")
+                return
+            }
+            
+            // Agregarlo con cantidad 1
             currentItems.add(
                 CartItem(
                     productId = product.id,
@@ -86,6 +99,7 @@ class CartViewModel : ViewModel() {
 
         _cartItems.value = currentItems
         calculateTotal()
+        _cartState.value = CartState.Success("Producto agregado al carrito")
     }
 
     // Remover producto del carrito
@@ -105,7 +119,15 @@ class CartViewModel : ViewModel() {
         val itemIndex = currentItems.indexOfFirst { it.productId == productId }
 
         if (itemIndex != -1) {
-            currentItems[itemIndex] = currentItems[itemIndex].copy(quantity = newQuantity)
+            val item = currentItems[itemIndex]
+            
+            // Verificar stock disponible
+            if (newQuantity > item.product.cantidad) {
+                _cartState.value = CartState.Error("No hay suficiente stock. Solo hay ${item.product.cantidad} unidades disponibles.")
+                return
+            }
+            
+            currentItems[itemIndex] = item.copy(quantity = newQuantity)
             _cartItems.value = currentItems
             calculateTotal()
         }
@@ -115,7 +137,15 @@ class CartViewModel : ViewModel() {
     fun incrementQuantity(productId: String) {
         val item = _cartItems.value.find { it.productId == productId }
         item?.let {
-            updateQuantity(productId, it.quantity + 1)
+            val newQuantity = it.quantity + 1
+            
+            // Verificar stock disponible
+            if (newQuantity > it.product.cantidad) {
+                _cartState.value = CartState.Error("No hay suficiente stock. Solo hay ${it.product.cantidad} unidades disponibles.")
+                return
+            }
+            
+            updateQuantity(productId, newQuantity)
         }
     }
 
@@ -123,7 +153,8 @@ class CartViewModel : ViewModel() {
     fun decrementQuantity(productId: String) {
         val item = _cartItems.value.find { it.productId == productId }
         item?.let {
-            updateQuantity(productId, it.quantity - 1)
+            val newQuantity = it.quantity - 1
+            updateQuantity(productId, newQuantity)
         }
     }
 
@@ -168,7 +199,9 @@ class CartViewModel : ViewModel() {
                     .get()
                     .await()
 
-                val compradorNombre = userDoc.getString("nombres") ?: "Usuario"
+                val compradorNombres = userDoc.getString("nombres") ?: ""
+                val compradorApellidos = userDoc.getString("apellidos") ?: ""
+                val compradorNombre = "$compradorNombres $compradorApellidos".trim().ifEmpty { "Usuario" }
                 val compradorEmail = userDoc.getString("email") ?: ""
 
                 // Agrupar items por vendedor
@@ -187,10 +220,12 @@ class CartViewModel : ViewModel() {
                         .get()
                         .await()
 
-                    val vendedorNombre = vendorDoc.getString("nombres") ?: "Vendedor"
+                    val vendedorNombres = vendorDoc.getString("nombres") ?: ""
+                    val vendedorApellidos = vendorDoc.getString("apellidos") ?: ""
+                    val vendedorNombre = "$vendedorNombres $vendedorApellidos".trim().ifEmpty { "Vendedor" }
                     val vendedorTelefono = vendorDoc.getString("telefono") ?: ""
 
-                    // Crear la orden
+                    // Crear la orden en memoria
                     val order = Order(
                         compradorId = userId,
                         compradorNombre = compradorNombre,
@@ -204,12 +239,53 @@ class CartViewModel : ViewModel() {
                         vendedorTelefono = vendedorTelefono
                     )
 
+                    // Convertir items a Map para Firestore
+                    val itemsMap = items.map { item ->
+                        mapOf(
+                            "productId" to item.productId,
+                            "quantity" to item.quantity,
+                            "product" to mapOf(
+                                "id" to item.product.id,
+                                "titulo" to item.product.titulo,
+                                "descripcion" to item.product.descripcion,
+                                "precio" to item.product.precio,
+                                "cantidad" to item.product.cantidad,
+                                "tipo" to item.product.tipo,
+                                "categoria" to item.product.categoria,
+                                "estado" to item.product.estado,
+                                "vendedorId" to item.product.vendedorId,
+                                "vendedorNombre" to item.product.vendedorNombre,
+                                "vendedorTelefono" to item.product.vendedorTelefono,
+                                "vendedorEmail" to item.product.vendedorEmail,
+                                "imagenesUrls" to item.product.imagenesUrls,
+                                "fechaPublicacion" to item.product.fechaPublicacion,
+                                "vistas" to item.product.vistas
+                            )
+                        )
+                    }
+
+                    // Crear la orden con datos serializables para Firestore
+                    val orderData = hashMapOf(
+                        "compradorId" to userId,
+                        "compradorNombre" to compradorNombre,
+                        "compradorEmail" to compradorEmail,
+                        "items" to itemsMap,
+                        "total" to orderTotal,
+                        "estado" to "Pendiente",
+                        "fechaCreacion" to System.currentTimeMillis(),
+                        "vendedorId" to vendedorId,
+                        "vendedorNombre" to vendedorNombre,
+                        "vendedorTelefono" to vendedorTelefono
+                    )
+
                     // Guardar en Firestore
+                    android.util.Log.d("CartViewModel", "Saving order to Firestore: compradorId=$userId, vendedorId=$vendedorId, total=$orderTotal")
                     withTimeout(10000) {
                         val docRef = firestore.collection("orders")
-                            .add(order)
+                            .add(orderData)
                             .await()
 
+                        android.util.Log.d("CartViewModel", "Order saved successfully with ID: ${docRef.id}")
                         createdOrders.add(order.copy(id = docRef.id))
                     }
                 }

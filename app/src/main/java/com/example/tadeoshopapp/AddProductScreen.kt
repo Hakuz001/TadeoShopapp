@@ -7,6 +7,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -115,6 +116,8 @@ fun AddProductScreen(
     var titulo by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
     var precio by remember { mutableStateOf("") }
+    var cantidad by remember { mutableStateOf(1) }
+    var tipoProducto by remember { mutableStateOf("Nuevo") } // "Nuevo" o "Usado"
     var selectedCategory by remember { mutableStateOf("") }
     var selectedSubcategory by remember { mutableStateOf("") }
     var expandedCategory by remember { mutableStateOf(false) }
@@ -440,6 +443,113 @@ fun AddProductScreen(
                 shape = RoundedCornerShape(12.dp)
             )
 
+            // Cantidad
+            Text(
+                text = "Cantidad",
+                style = MaterialTheme.typography.h6,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF212121)
+            )
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Cantidad disponible",
+                    fontSize = 16.sp,
+                    color = Color(0xFF666666)
+                )
+                
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = { if (cantidad > 1) cantidad-- },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(
+                                Color(0xFFE0E0E0),
+                                CircleShape
+                            )
+                    ) {
+                        Icon(
+                            Icons.Default.Remove,
+                            contentDescription = "Disminuir",
+                            tint = Color(0xFF666666)
+                        )
+                    }
+                    
+                    Text(
+                        text = cantidad.toString(),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = Color(0xFF212121)
+                    )
+                    
+                    IconButton(
+                        onClick = { if (cantidad < 999) cantidad++ },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(
+                                Color(0xFF00ACC1),
+                                CircleShape
+                            )
+                    ) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = "Aumentar",
+                            tint = Color.White
+                        )
+                    }
+                }
+            }
+
+            // Tipo (Nuevo/Usado)
+            Text(
+                text = "Tipo",
+                style = MaterialTheme.typography.h6,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF212121)
+            )
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = { tipoProducto = "Nuevo" },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = if (tipoProducto == "Nuevo") Color(0xFF00ACC1) else Color(0xFFE0E0E0)
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = "Nuevo",
+                        color = if (tipoProducto == "Nuevo") Color.White else Color(0xFF666666),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                
+                Button(
+                    onClick = { tipoProducto = "Usado" },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = if (tipoProducto == "Usado") Color(0xFF00ACC1) else Color(0xFFE0E0E0)
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = "Usado",
+                        color = if (tipoProducto == "Usado") Color.White else Color(0xFF666666),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
             // Selector de categoría
             Text(
                 text = stringResource(R.string.category_label),
@@ -553,6 +663,8 @@ fun AddProductScreen(
                             titulo = titulo,
                             descripcion = descripcion,
                             precio = precio.toDouble(),
+                            cantidad = cantidad,
+                            tipo = tipoProducto,
                             categoria = categoria,
                             imageUris = imageUris,
                             onSuccess = {

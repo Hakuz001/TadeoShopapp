@@ -48,12 +48,19 @@ class OrdersViewModel : ViewModel() {
                 // Buscar órdenes donde el usuario es el comprador
                 val snapshot = firestore.collection("orders")
                     .whereEqualTo("compradorId", userId)
-                    .orderBy("fechaCreacion", Query.Direction.DESCENDING)
                     .get()
                     .await()
 
-                val orders = snapshot.documents.mapNotNull { doc ->
+                // Ordenar manualmente por fecha descendente
+                val sortedDocuments = snapshot.documents.sortedByDescending { 
+                    (it.get("fechaCreacion") as? Number)?.toLong() ?: 0L
+                }
+
+                android.util.Log.d("OrdersViewModel", "Found ${snapshot.documents.size} orders for userId: $userId")
+
+                val orders = sortedDocuments.mapNotNull { doc ->
                     try {
+                        android.util.Log.d("OrdersViewModel", "Processing order: ${doc.id}")
                         val items = (doc.get("items") as? List<*>)?.mapNotNull { item ->
                             val itemMap = item as? Map<*, *>
                             val productMap = itemMap?.get("product") as? Map<*, *>
@@ -64,6 +71,8 @@ class OrdersViewModel : ViewModel() {
                                     titulo = productMap["titulo"] as? String ?: "",
                                     descripcion = productMap["descripcion"] as? String ?: "",
                                     precio = (productMap["precio"] as? Number)?.toDouble() ?: 0.0,
+                                    cantidad = (productMap["cantidad"] as? Number)?.toInt() ?: 1,
+                                    tipo = productMap["tipo"] as? String ?: "Nuevo",
                                     categoria = productMap["categoria"] as? String ?: "",
                                     imagenesUrls = productMap["imagenesUrls"] as? List<String> ?: emptyList(),
                                     vendedorId = productMap["vendedorId"] as? String ?: "",
@@ -80,7 +89,7 @@ class OrdersViewModel : ViewModel() {
                             } else null
                         } ?: emptyList()
 
-                        Order(
+                        val order = Order(
                             id = doc.id,
                             compradorId = doc.getString("compradorId") ?: "",
                             compradorNombre = doc.getString("compradorNombre") ?: "",
@@ -93,11 +102,15 @@ class OrdersViewModel : ViewModel() {
                             vendedorNombre = doc.getString("vendedorNombre") ?: "",
                             vendedorTelefono = doc.getString("vendedorTelefono") ?: ""
                         )
+                        android.util.Log.d("OrdersViewModel", "Successfully created order: ${order.id}")
+                        order
                     } catch (e: Exception) {
+                        android.util.Log.e("OrdersViewModel", "Error parsing order: ${e.message}", e)
                         null
                     }
                 }
 
+                android.util.Log.d("OrdersViewModel", "Successfully loaded ${orders.size} orders")
                 _myPurchases.value = orders
                 _ordersState.value = OrdersState.Idle
 
@@ -122,11 +135,17 @@ class OrdersViewModel : ViewModel() {
                 // Buscar órdenes donde el usuario es el vendedor
                 val snapshot = firestore.collection("orders")
                     .whereEqualTo("vendedorId", userId)
-                    .orderBy("fechaCreacion", Query.Direction.DESCENDING)
                     .get()
                     .await()
 
-                val orders = snapshot.documents.mapNotNull { doc ->
+                // Ordenar manualmente por fecha descendente
+                val sortedDocuments = snapshot.documents.sortedByDescending { 
+                    (it.get("fechaCreacion") as? Number)?.toLong() ?: 0L
+                }
+
+                android.util.Log.d("OrdersViewModel", "Found ${snapshot.documents.size} sales for userId: $userId")
+
+                val orders = sortedDocuments.mapNotNull { doc ->
                     try {
                         val items = (doc.get("items") as? List<*>)?.mapNotNull { item ->
                             val itemMap = item as? Map<*, *>
@@ -138,6 +157,8 @@ class OrdersViewModel : ViewModel() {
                                     titulo = productMap["titulo"] as? String ?: "",
                                     descripcion = productMap["descripcion"] as? String ?: "",
                                     precio = (productMap["precio"] as? Number)?.toDouble() ?: 0.0,
+                                    cantidad = (productMap["cantidad"] as? Number)?.toInt() ?: 1,
+                                    tipo = productMap["tipo"] as? String ?: "Nuevo",
                                     categoria = productMap["categoria"] as? String ?: "",
                                     imagenesUrls = productMap["imagenesUrls"] as? List<String> ?: emptyList(),
                                     vendedorId = productMap["vendedorId"] as? String ?: "",
@@ -187,10 +208,93 @@ class OrdersViewModel : ViewModel() {
             try {
                 _ordersState.value = OrdersState.Loading
 
+                // Obtener la orden actual para verificar el estado anterior
+                val orderDoc = firestore.collection("orders")
+                    .document(orderId)
+                    .get()
+                    .await()
+
+                val currentStatus = orderDoc.getString("estado") ?: "Pendiente"
+                val items = orderDoc.get("items") as? List<*>
+
+                // Actualizar el estado de la orden
                 firestore.collection("orders")
                     .document(orderId)
                     .update("estado", newStatus)
                     .await()
+
+                // Si se cambió a "Entregado" y antes no estaba entregado, reducir stock
+                if (newStatus == "Entregado" && currentStatus != "Entregado" && items != null) {
+                    android.util.Log.d("OrdersViewModel", "Reduciendo stock para orden entregada: $orderId")
+                    
+                    // Reducir stock de cada producto en la orden
+                    items.forEach { item ->
+                        val itemMap = item as? Map<*, *>
+                        val productMap = itemMap?.get("product") as? Map<*, *>
+                        val quantity = (itemMap?.get("quantity") as? Number)?.toInt() ?: 0
+                        val productId = productMap?.get("id") as? String
+
+                        if (productId != null && quantity > 0) {
+                            try {
+                                // Obtener el producto actual
+                                val productDoc = firestore.collection("products")
+                                    .document(productId)
+                                    .get()
+                                    .await()
+
+                                val currentStock = (productDoc.get("cantidad") as? Number)?.toInt() ?: 0
+                                val newStock = maxOf(0, currentStock - quantity) // No permitir stock negativo
+
+                                android.util.Log.d("OrdersViewModel", "Producto $productId: stock $currentStock -> $newStock (vendido: $quantity)")
+
+                                // Actualizar el stock del producto
+                                firestore.collection("products")
+                                    .document(productId)
+                                    .update("cantidad", newStock)
+                                    .await()
+
+                            } catch (e: Exception) {
+                                android.util.Log.e("OrdersViewModel", "Error actualizando stock del producto $productId: ${e.message}", e)
+                            }
+                        }
+                    }
+                }
+                // Si se revierte de "Entregado" a otro estado, restaurar stock
+                else if (currentStatus == "Entregado" && newStatus != "Entregado" && items != null) {
+                    android.util.Log.d("OrdersViewModel", "Restaurando stock para orden revertida: $orderId")
+                    
+                    // Restaurar stock de cada producto en la orden
+                    items.forEach { item ->
+                        val itemMap = item as? Map<*, *>
+                        val productMap = itemMap?.get("product") as? Map<*, *>
+                        val quantity = (itemMap?.get("quantity") as? Number)?.toInt() ?: 0
+                        val productId = productMap?.get("id") as? String
+
+                        if (productId != null && quantity > 0) {
+                            try {
+                                // Obtener el producto actual
+                                val productDoc = firestore.collection("products")
+                                    .document(productId)
+                                    .get()
+                                    .await()
+
+                                val currentStock = (productDoc.get("cantidad") as? Number)?.toInt() ?: 0
+                                val newStock = currentStock + quantity
+
+                                android.util.Log.d("OrdersViewModel", "Producto $productId: stock $currentStock -> $newStock (restaurado: $quantity)")
+
+                                // Actualizar el stock del producto
+                                firestore.collection("products")
+                                    .document(productId)
+                                    .update("cantidad", newStock)
+                                    .await()
+
+                            } catch (e: Exception) {
+                                android.util.Log.e("OrdersViewModel", "Error restaurando stock del producto $productId: ${e.message}", e)
+                            }
+                        }
+                    }
+                }
 
                 _ordersState.value = OrdersState.Success("Estado actualizado")
 

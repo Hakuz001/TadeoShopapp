@@ -18,6 +18,8 @@ data class Product(
     val titulo: String = "",
     val descripcion: String = "",
     val precio: Double = 0.0,
+    val cantidad: Int = 1,
+    val tipo: String = "Nuevo", // "Nuevo" o "Usado"
     val categoria: String = "",
     val estado: String = "Publicado",
     val vendedorId: String = "",
@@ -127,6 +129,8 @@ class ProductViewModel : ViewModel() {
         titulo: String,
         descripcion: String,
         precio: Double,
+        cantidad: Int,
+        tipo: String,
         categoria: String,
         imageUris: List<Uri>,
         onSuccess: () -> Unit = {},
@@ -148,7 +152,9 @@ class ProductViewModel : ViewModel() {
                     .get()
                     .await()
 
-                val vendedorNombre = userDoc.getString("nombre") ?: "Usuario"
+                val vendedorNombres = userDoc.getString("nombres") ?: ""
+                val vendedorApellidos = userDoc.getString("apellidos") ?: ""
+                val vendedorNombre = "$vendedorNombres $vendedorApellidos".trim().ifEmpty { "Usuario" }
                 val vendedorTelefono = userDoc.getString("telefono") ?: "573001234567"
                 val vendedorEmail = userDoc.getString("email") ?: "vendedor@ejemplo.com"
 
@@ -180,6 +186,8 @@ class ProductViewModel : ViewModel() {
                     titulo = titulo,
                     descripcion = descripcion,
                     precio = precio,
+                    cantidad = cantidad,
+                    tipo = tipo,
                     categoria = categoria,
                     estado = "Publicado",
                     vendedorId = userId,
@@ -217,6 +225,8 @@ class ProductViewModel : ViewModel() {
         titulo: String,
         descripcion: String,
         precio: Double,
+        cantidad: Int,
+        tipo: String,
         categoria: String,
         existingImageUrls: List<String>,
         newImageUris: List<Uri>,
@@ -267,6 +277,8 @@ class ProductViewModel : ViewModel() {
                     "titulo" to titulo,
                     "descripcion" to descripcion,
                     "precio" to precio,
+                    "cantidad" to cantidad,
+                    "tipo" to tipo,
                     "categoria" to categoria,
                     "imagenesUrls" to allImageUrls
                 )
