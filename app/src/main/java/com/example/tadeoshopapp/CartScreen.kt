@@ -42,11 +42,20 @@ fun CartScreen(
     var showCheckoutDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    //Resetear estado al entrar a la pantalla
+    LaunchedEffect(Unit) {
+        cartViewModel.resetCartState()
+    }
+
     // Manejar estados
     LaunchedEffect(cartState) {
         when (cartState) {
-            is CartState.Success -> {
+            is CartState.CheckoutSuccess -> { // Solo navegar cuando es CheckoutSuccess
                 onCheckoutSuccess()
+                cartViewModel.resetCartState()
+            }
+            is CartState.ItemAdded -> { //Cuando se agrega item, solo resetear
+                // No hacer nada, el mensaje se muestra en ProductDetailScreen
                 cartViewModel.resetCartState()
             }
             is CartState.Error -> {
@@ -541,7 +550,7 @@ fun CartItemCard(
                         color = if (cartItem.quantity >= cartItem.product.cantidad) Color(0xFFE53935) else Color(0xFF212121),
                         modifier = Modifier.padding(horizontal = 20.dp)
                     )
-                    
+
                     // Indicador de límite alcanzado
                     if (cartItem.quantity >= cartItem.product.cantidad) {
                         Text(
