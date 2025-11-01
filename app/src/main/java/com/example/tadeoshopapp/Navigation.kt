@@ -22,7 +22,7 @@ sealed class Screen(val route: String) {
     object Register : Screen("register")
     object ForgotPassword : Screen("forgot_password")
     object Home : Screen("home")
-    object Messages : Screen("messages")
+    object Messages : Screen("messages/{otherUserId}/{otherUserName}")
     object EditProfile : Screen("edit_profile")
     object Products : Screen("products")
     object AddProduct : Screen("add_product")
@@ -33,6 +33,9 @@ sealed class Screen(val route: String) {
     object MySales : Screen("my_sales") // ⭐ NUEVO
     object ProductDetail : Screen("product_detail/{productId}") {
         fun createRoute(productId: String) = "product_detail/$productId"
+    }
+    object MessagesBase : Screen("messages") {
+        fun createRoute(otherUserId: String, otherUserName: String) = "messages/$otherUserId/$otherUserName"
     }
 }
 
@@ -98,11 +101,15 @@ fun AppNavigation() {
             )
         }
 
-        composable(Screen.Messages.route) {
+        composable(Screen.Messages.route) { backStackEntry ->
+            val otherUserId = backStackEntry.arguments?.getString("otherUserId") ?: ""
+            val otherUserName = backStackEntry.arguments?.getString("otherUserName") ?: "Usuario"
             MessagesScreen(
                 navController = navController,
-                viewModel = authViewModel,
-                productViewModel = productViewModel
+                authViewModel = authViewModel,
+                productViewModel = productViewModel,
+                otherUserId = otherUserId,
+                otherUserName = otherUserName
             )
         }
 
@@ -230,14 +237,12 @@ fun AppNavigation() {
                         navController.popBackStack()
                     },
                     onContactSeller = { sellerId ->
-                        navController.navigate(Screen.Messages.route) {
+                        navController.navigate(Screen.MessagesBase.createRoute(product.vendedorId, product.vendedorNombre)) {
                             popUpTo(Screen.Home.route) { inclusive = false }
                         }
                     },
                     onNavigateToMessages = {
-                        navController.navigate(Screen.Messages.route) {
-                            popUpTo(Screen.Home.route) { inclusive = false }
-                        }
+                        // No usamos esto, dejamos solo onContactSeller
                     },
                     authViewModel = authViewModel,
                     cartViewModel = cartViewModel
