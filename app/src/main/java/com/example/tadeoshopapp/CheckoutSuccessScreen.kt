@@ -24,7 +24,6 @@ fun CheckoutSuccessScreen(
     onContactSeller: () -> Unit,
     cartViewModel: CartViewModel = viewModel()
 ) {
-    val createdOrders by cartViewModel.createdOrders.collectAsState()
 
     Column(
         modifier = Modifier
@@ -54,15 +53,14 @@ fun CheckoutSuccessScreen(
         ) {
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.padding(40.dp)
+                modifier = Modifier.padding(20.dp)
             ) {
-                //  mascota de TadeoShop
-                // Por ahora uso el ícono del logo
+                // Imagen de compra confirmada
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_dog_logo),
-                    contentDescription = null,
-                    modifier = Modifier.size(140.dp),
-                    tint = Color(0xFF00ACC1)
+                    painter = painterResource(id = R.drawable.ic_dog_compra),
+                    contentDescription = "Compra confirmada",
+                    modifier = Modifier.fillMaxSize(),
+                    tint = Color.Unspecified
                 )
             }
         }
