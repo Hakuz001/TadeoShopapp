@@ -2,6 +2,7 @@ package com.example.tadeoshopapp
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -207,7 +209,7 @@ fun CartScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    // Círculo con mascota
+                    // Círculo con ícono de carrito
                     Surface(
                         modifier = Modifier.size(240.dp),
                         shape = RoundedCornerShape(120.dp),
@@ -218,11 +220,11 @@ fun CartScreen(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier.padding(40.dp)
                         ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_dog_logo),
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_dog_empty),  // ⭐ TU IMAGEN
                                 contentDescription = stringResource(R.string.empty_cart_message),
-                                modifier = Modifier.size(140.dp),
-                                tint = Color(0xFF00ACC1)
+                                modifier = Modifier.size(140.dp)
+                                // SIN tint para que se vea en sus colores originales
                             )
                         }
                     }

@@ -205,7 +205,7 @@ fun AppNavigation() {
             )
         }
 
-        // ⭐ NUEVA PANTALLA - Mis Compras
+        //  Mis Compras
         composable(Screen.MyPurchases.route) {
             MyPurchasesScreen(
                 onBackClick = {
@@ -215,7 +215,7 @@ fun AppNavigation() {
             )
         }
 
-        // ⭐ NUEVA PANTALLA - Mis Ventas
+        //  Mis Ventas
         composable(Screen.MySales.route) {
             MySalesScreen(
                 onBackClick = {

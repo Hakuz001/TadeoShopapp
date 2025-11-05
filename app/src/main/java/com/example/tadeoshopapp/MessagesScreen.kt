@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -124,18 +125,22 @@ fun MessagesScreen(
                                     .size(40.dp)
                                     .clip(CircleShape),
                                 contentScale = ContentScale.Crop,
-                                error = painterResource(id = R.drawable.ic_dog_logo)
+                                error = painterResource(id = R.drawable.ic_logo_mensaje)
                             )
                         } else {
+                            // Ícono de perfil vacío cuando no hay foto
                             Surface(
                                 modifier = Modifier.size(40.dp),
                                 shape = CircleShape,
-                                color = Color(0xFF00ACC1)
+                                color = Color(0xFFE0E0E0)
                             ) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.ic_dog_logo),
-                                    contentDescription = "Avatar",
-                                    modifier = Modifier.padding(6.dp)
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = "Perfil sin foto",
+                                    modifier = Modifier
+                                        .padding(8.dp)
+                                        .fillMaxSize(),
+                                    tint = Color(0xFF9E9E9E)
                                 )
                             }
                         }
@@ -211,7 +216,7 @@ fun MessagesScreen(
                 onCameraClick = { imagePickerLauncher.launch("image/*") }
             )
         }
-        
+
         // Diálogo de imagen expandida
         expandedImageUrl?.let { imageUrl ->
             ImageExpandDialog(
@@ -245,11 +250,11 @@ fun MessageBubble(message: Message, isFromCurrentUser: Boolean, onImageClick: (S
                     bottomStart = if (isFromCurrentUser) 18.dp else 4.dp,
                     bottomEnd = if (isFromCurrentUser) 4.dp else 18.dp
                 ),
-                color = if (message.messageType == "image") 
-                    Color.Transparent 
-                else if (isFromCurrentUser) 
-                    Color(0xFF00897B) 
-                else 
+                color = if (message.messageType == "image")
+                    Color.Transparent
+                else if (isFromCurrentUser)
+                    Color(0xFF00897B)
+                else
                     Color(0xFFF5F5F5),
                 elevation = 1.dp,
                 modifier = Modifier.padding(horizontal = 4.dp)
@@ -270,7 +275,7 @@ fun MessageBubble(message: Message, isFromCurrentUser: Boolean, onImageClick: (S
                             error = painterResource(id = android.R.drawable.ic_dialog_alert)
                         )
                     }
-                    
+
                     // Mostrar caption si existe
                     if (message.text.isNotBlank() && message.text != "Imagen") {
                         Text(
@@ -317,7 +322,7 @@ fun TypingIndicator() {
         horizontalArrangement = Arrangement.Start
     ) {
         Spacer(modifier = Modifier.width(8.dp))
-        
+
         Surface(
             shape = RoundedCornerShape(18.dp),
             color = Color(0xFFF5F5F5),
@@ -333,7 +338,7 @@ fun TypingIndicator() {
                 TypingDot(delay = 400)
             }
         }
-        
+
         Spacer(modifier = Modifier.width(8.dp))
     }
 }
@@ -341,7 +346,7 @@ fun TypingIndicator() {
 @Composable
 fun TypingDot(delay: Int) {
     val infiniteTransition = rememberInfiniteTransition(label = "typing")
-    
+
     val scale by infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = 0.5f,
@@ -459,8 +464,8 @@ fun ImageExpandDialog(imageUrl: String, onDismiss: () -> Unit) {
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Fit
             )
-            
-            // Botón de minimizar
+
+            // Botón de cerrar
             IconButton(
                 onClick = onDismiss,
                 modifier = Modifier

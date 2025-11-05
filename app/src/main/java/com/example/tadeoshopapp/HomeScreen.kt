@@ -50,14 +50,12 @@ fun HomeScreen(
                 // Mensajes
                 BottomNavigationItem(
                     icon = {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_dog_logo),
-                                contentDescription = stringResource(R.string.nav_messages),
-                                modifier = Modifier.size(28.dp),
-                                tint = if (selectedTab == 0) Color(0xFF00ACC1) else Color(0xFF999999)
-                            )
-                        }
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_logo_mensaje),
+                            contentDescription = stringResource(R.string.nav_messages),
+                            modifier = Modifier.size(24.dp),
+                            alpha = if (selectedTab == 0) 1f else 0.5f
+                        )
                     },
                     label = {
                         Text(
@@ -72,17 +70,15 @@ fun HomeScreen(
                     unselectedContentColor = Color(0xFF999999)
                 )
 
-                // Perfil
+                //  Perfil
                 BottomNavigationItem(
                     icon = {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_dog_logo),
-                                contentDescription = stringResource(R.string.nav_profile),
-                                modifier = Modifier.size(28.dp),
-                                tint = if (selectedTab == 1) Color(0xFF00ACC1) else Color(0xFF999999)
-                            )
-                        }
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_logo_perfil),
+                            contentDescription = stringResource(R.string.nav_profile),
+                            modifier = Modifier.size(24.dp),
+                            alpha = if (selectedTab == 1) 1f else 0.5f
+                        )
                     },
                     label = {
                         Text(
@@ -97,17 +93,15 @@ fun HomeScreen(
                     unselectedContentColor = Color(0xFF999999)
                 )
 
-                // Productos (Marketplace menu)
+                //  Productos (Marketplace)
                 BottomNavigationItem(
                     icon = {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(
-                                imageVector = Icons.Default.ShoppingCart,
-                                contentDescription = stringResource(R.string.nav_products),
-                                modifier = Modifier.size(28.dp),
-                                tint = if (selectedTab == 2) Color(0xFF00ACC1) else Color(0xFF999999)
-                            )
-                        }
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_logo_productos),
+                            contentDescription = stringResource(R.string.nav_products),
+                            modifier = Modifier.size(24.dp),
+                            alpha = if (selectedTab == 2) 1f else 0.5f
+                        )
                     },
                     label = {
                         Text(
@@ -187,7 +181,7 @@ fun MessagesListScreen(
         } else {
             conversations.filter { conversation ->
                 conversation.otherUserName.contains(searchQuery, ignoreCase = true) ||
-                conversation.lastMessage.contains(searchQuery, ignoreCase = true)
+                        conversation.lastMessage.contains(searchQuery, ignoreCase = true)
             }
         }
     }
@@ -215,7 +209,7 @@ fun MessagesListScreen(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
                     color = Color(0xFF212121)
                 )
-                
+
                 // Barra de búsqueda
                 OutlinedTextField(
                     value = searchQuery,

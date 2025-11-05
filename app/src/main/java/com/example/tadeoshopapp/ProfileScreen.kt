@@ -11,6 +11,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -37,12 +38,11 @@ fun ProfileScreen(
     onEditProfileClick: () -> Unit = {},
     onLogoutClick: () -> Unit = {},
     onViewProductsClick: () -> Unit = {},
-    onMyPurchasesClick: () -> Unit = {}, // ⭐ NUEVO
-    onMySalesClick: () -> Unit = {}, // ⭐ NUEVO
+    onMyPurchasesClick: () -> Unit = {},
+    onMySalesClick: () -> Unit = {},
     viewModel: AuthViewModel = viewModel()
 ) {
     val currentUser by viewModel.currentUser.collectAsState()
-
 
     if (currentUser == null) {
         Box(
@@ -105,7 +105,7 @@ fun ProfileScreen(
                             error = painterResource(id = R.drawable.ic_dog_logo)
                         )
                     } else {
-                        // Mostrar logo por defecto si no tiene foto
+                        // Mostrar ícono de perfil genérico si no tiene foto
                         Box(
                             modifier = Modifier
                                 .size(120.dp)
@@ -113,10 +113,11 @@ fun ProfileScreen(
                                 .background(Color(0xFFE0E0E0)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.ic_dog_logo),
-                                contentDescription = stringResource(R.string.logo_description),
-                                modifier = Modifier.size(90.dp)
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "Perfil sin foto",
+                                modifier = Modifier.size(70.dp),
+                                tint = Color(0xFF9E9E9E)
                             )
                         }
                     }
@@ -180,7 +181,7 @@ fun ProfileScreen(
                         text = dateFormat.format(date)
                     )
 
-                    //  mostrar productos publicados si es Vendedor
+                    // Mostrar productos publicados si es Vendedor
                     if (user.tipoUsuario == "Vendedor") {
                         Spacer(modifier = Modifier.height(12.dp))
 
@@ -223,7 +224,7 @@ fun ProfileScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // ⭐ NUEVO - Botón "Mis Compras" (para todos)
+                // Botón "Mis Compras" (para todos)
                 OutlinedButton(
                     onClick = onMyPurchasesClick,
                     modifier = Modifier
@@ -252,7 +253,7 @@ fun ProfileScreen(
                 // Botones específicos para vendedores
                 currentUser?.let { user ->
                     if (user.tipoUsuario == "Vendedor") {
-                        // ⭐ NUEVO - Botón "Mis Ventas"
+                        // Botón "Mis Ventas"
                         OutlinedButton(
                             onClick = onMySalesClick,
                             modifier = Modifier
